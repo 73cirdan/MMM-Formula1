@@ -9,10 +9,9 @@ This version combines standing and schedule in one module. Various options enabl
 [![Code Climate](https://codeclimate.com/github/ianperrin/MMM-Formula1/badges/gpa.svg)](https://codeclimate.com/github/ianperrin/MMM-Formula1)
 [![Known Vulnerabilities](https://snyk.io/test/github/ianperrin/MMM-Formula1/badge.svg)](https://snyk.io/test/github/ianperrin/MMM-Formula1)
 
-## API Change
-Starting 2025, the data provider for this module (ergast) is off line. Jolpi.ca provides a new api. In the next months this module will be altered.
-Not all data, e.q. the race schedule, is available at the endpoint yet. 
-9 jan 2025: First race schedule data is getting to the mirror. Fixed a bug on handling missing time in data [brach devjan2025], will merge into master in next days. 
+## Current update
+Currently testing the season 2026 changes, two new teams and a new track. Drew Madring, no sector info yet
+
 
 ## Example
 
@@ -131,10 +130,8 @@ The following properties can be configured:
   - rotated some layout to use spcae more efficient (portrait layout)
   - thickened some lines
   - made a unicolor version for grayscale mode
-- ergast api for the data
-  - btw ergast announced to deprecate the api end of 2024. There is an alternative free api that will add schedule and standings to their api early in 2024.
-  - See [more info here](https://openf1.org/?javascript#roadmap)
-
+- https://api.jolpi.ca/e for the data
+  
 ## Disclaimer
 
 This an unofficial project and is not associated in any way with the Formula 1 companies. F1, FORMULA ONE, FORMULA 1, FIA FORMULA ONE WORLD CHAMPIONSHIP, GRAND PRIX and related marks are trade marks of Formula One Licensing B.V.
