@@ -58,6 +58,7 @@ Module.register("MMM-Formula1", {
     interlagos: "/brazil.svg",
     vegas: "/vegas.svg",
     losail: "/qatar.svg",
+    madring: "/madring.svg",
     yas_marina: "/abudhabi.svg"
   },
 
