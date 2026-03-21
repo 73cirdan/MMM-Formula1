@@ -1,11 +1,11 @@
 {
-	"DRIVER": "Fahrer",
+  "DRIVER": "Fahrer",
   "CONSTRUCTOR": "Konstrukteur",
   "SEASON": "Saison",
   "ROUND": "Rennen",
   "NO DATA": "Noch keine Daten bisher geladen...",
   "RACE_DETAILS": "Details zum aktuellen Rennen",
-  "CIRCUIT_LAYOUT": "Streckenlayout", 
+  "CIRCUIT_LAYOUT": "Streckenlayout",
   "NEXT_RACE": "Nächstes Rennen",
   "LAST_RACE": "Last race",
   "RACE_DATE": "Rennen",

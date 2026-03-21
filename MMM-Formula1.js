@@ -209,18 +209,19 @@ Module.register("MMM-Formula1", {
         season: schedule[0].season,
         round: currentround,
         raceName: schedule[currentround - 1].raceName,
-        nextRaceName: currentround<schedule.length?schedule[currentround].raceName:null,
+        nextRaceName: currentround < schedule.length ? schedule[currentround].raceName : null,
         circuitName: schedule[currentround - 1].Circuit.circuitName,
         circuitImage: this.circuitImages[schedule[currentround - 1].Circuit.circuitId],
         raceDate: this.formatDateAndTime(schedule[currentround - 1]),
-        nextRaceDate: currentround<schedule.length?this.formatDateAndTime(schedule[currentround]):null,
+        nextRaceDate:
+          currentround < schedule.length ? this.formatDateAndTime(schedule[currentround]) : null,
         qualifyingDate: this.formatDateAndTime(schedule[currentround - 1].Qualifying),
         pract1Date: this.formatDateAndTime(schedule[currentround - 1].FirstPractice),
         pract2Date: this.formatDateAndTime(schedule[currentround - 1].SecondPractice),
         pract3Date: this.formatDateAndTime(schedule[currentround - 1].ThirdPractice),
-	// this might break with jolpi. sprintQualifying was in SecondPractise on ergast,
-	//  might need extra line here and in the template: 
-	sprintQualifyingDate: this.formatDateAndTime(schedule[currentround - 1].SprintQualifying),
+        // this might break with jolpi. sprintQualifying was in SecondPractise on ergast,
+        //  might need extra line here and in the template:
+        sprintQualifyingDate: this.formatDateAndTime(schedule[currentround - 1].SprintQualifying),
         sprintDate: this.formatDateAndTime(schedule[currentround - 1].Sprint),
         identifier: this.identifier,
         timeStamp: this.dataRefreshTimeStamp

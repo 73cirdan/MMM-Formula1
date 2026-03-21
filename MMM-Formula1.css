@@ -19,7 +19,6 @@
 /* Flag Sprites - https://www.flag-sprites.com/en_US/ */
 
 .MMM-Formula1 .grayscale {
-  filter: gray; /* IE6-9 */
   filter: grayscale(1);
 }
 
