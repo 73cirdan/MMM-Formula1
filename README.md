@@ -10,8 +10,8 @@ This version combines standing and schedule in one module. Various options enabl
 [![Known Vulnerabilities](https://snyk.io/test/github/ianperrin/MMM-Formula1/badge.svg)](https://snyk.io/test/github/ianperrin/MMM-Formula1)
 
 ## Current update
-Currently testing the season 2026 changes, two new teams and a new track. Drew Madring, no sector info yet
 
+Currently testing the season 2026 changes, two new teams and a new track. Drew Madring, no sector info yet
 
 ## Example
 
@@ -131,7 +131,7 @@ The following properties can be configured:
   - thickened some lines
   - made a unicolor version for grayscale mode
 - https://api.jolpi.ca/e for the data
-  
+
 ## Disclaimer
 
 This an unofficial project and is not associated in any way with the Formula 1 companies. F1, FORMULA ONE, FORMULA 1, FIA FORMULA ONE WORLD CHAMPIONSHIP, GRAND PRIX and related marks are trade marks of Formula One Licensing B.V.
