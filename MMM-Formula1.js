@@ -1,4 +1,5 @@
-/* MagicMirror²
+/*
+ * MagicMirror²
  * Module: MMM-Formula1
  *
  * By Cirdan, Ian Perrin http://github.com/ianperrin/MMM-Formula1

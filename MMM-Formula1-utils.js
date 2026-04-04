@@ -1,4 +1,11 @@
-// MMM-Formula1-utils.js
+/*
+ * MagicMirror²
+ * Module: MMM-Formula1-utils.js
+ *
+ * By Cirdan, Ian Perrin http://github.com/ianperrin/MMM-Formula1
+ * MIT Licensed.
+ */
+
 // Universal Module Definition (UMD) style, both browser (run) and module (test)
 (function (root, factory) {
   if (typeof module === "object" && module.exports) {

@@ -6,10 +6,10 @@ All notable changes to this project will be documented in this file. See [commit
 
 ### Fixed
 
-* missing tracks and constructor logo's
+- missing tracks and constructor logo's
 
 ### Chores
 
-* refactor back end node_helper.js now uses api.js For api and node_helper there is also a test script
-* refactor front end MMM-Formula.js now uses MMM-Formula1-utils.js For utils there is also a test script
-* update devDependencies (move away from mocha and chai and into vitest. Also bumped lint tools )
+- refactor back end node_helper.js now uses api.js For api and node_helper there is also a test script
+- refactor front end MMM-Formula.js now uses MMM-Formula1-utils.js For utils there is also a test script
+- update devDependencies (move away from mocha and chai and into vitest. Also bumped lint tools )
