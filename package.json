@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/ianperrin/MMM-Formula1#readme",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "dependencies": {},
   "devDependencies": {
