@@ -13,16 +13,16 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3  # Updated to v3 for Node.js 22+ compatibility
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3  # Updated to v3 for Node.js 22+ compatibility
         with:
-          node-version: '22'  # Use the Node.js version specified in your package.json
+          node-version: "22"  # Or you can use 24 once it's stable
 
       - name: Install dependencies
         run: npm install
-        
+
       - name: Install moment for GitHub Actions
         run: npm install moment  # Install moment specifically for the CI environment
 
@@ -40,12 +40,12 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3  # Updated to v3 for Node.js 22+ compatibility
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3  # Updated to v3
         with:
-          node-version: '22'
+          node-version: "22"  # Or use 24 if you prefer to opt into Node.js 24 now
 
       - name: Install dependencies
         run: npm install
