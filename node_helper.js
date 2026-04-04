@@ -63,7 +63,7 @@ module.exports = NodeHelper.create({
 
     // Push the respective requests based on the configuration
     if (this.config.loadDriver) {
-      requests.push(this.handleRequest("DRIVER", `${baseUrl}/driverStandings.json`));
+      requests.push(this.handleRequest("DRIVER", `${baseUrl}/DriverStandings.json`));
     }
 
     if (this.config.loadConstructor) {

@@ -9,10 +9,10 @@
     root.MMMFormula1Utils = factory(moment); // `moment` for the browser
   }
 })(typeof self !== "undefined" ? self : this, function (moment) {
+
   /*
    * Helper Functions (General Utility)
    */
-
   // Only leave the top n positions and add the fan's position if needed.
   function sliceStandings(standings, maxRows, fanPosition) {
     if (!standings?.length || !maxRows) return [];
@@ -27,7 +27,6 @@
 
     return sliced;
   }
-
   // Formats the given date and time.
   function formatDateAndTime(dateTime, timeFormat) {
     if (!dateTime || !dateTime.date) return null;
@@ -45,7 +44,6 @@
       ? dateTimeMoment.format("DD MMM HH:mm")
       : dateTimeMoment.format("DD MMM hh:mm A");
   }
-
   // Finds the fan's driver position or constructor position from standings based on `isDriver`
   function findFan(standings, isDriver, fanCode) {
     if (!fanCode) return null;
@@ -63,7 +61,6 @@
       return constructor || null;
     }
   }
-
   // Determines if a particular standing should be displayed based on configuration.
   function shouldShowStanding(configType, showType, currentSecond) {
     const validTypes = ["DRIVER", "CONSTRUCTOR"];

@@ -1,6 +1,12 @@
 // api.js
 // This file contains functions to fetch data from an API, extract specific data, and handle errors.
 
+const createError = (type, message, statusCode = 500) => ({
+  type,
+  message,
+  statusCode
+});
+
 /**
  * Fetch data from a given URL.
  * @param {string} url - The URL to fetch data from.
@@ -13,25 +19,17 @@ async function fetchData(url) {
 
     // Check if the response status is not OK (e.g., 404 or 500)
     if (!response.ok) {
-      return {
-        error: {
-          type: "HTTP_ERROR",
-          status: response.status,
-          message: `HTTP ${response.status} for ${url}`
-        }
-      };
+      return {error: createError("HTTP_ERROR", `HTTP ${response.status} for ${url}`, response.status)};
     }
 
     // Parse the response as JSON
     const data = await response.json();
     return { data };
   } catch (err) {
+    //console.log('Fetch error:', err); // Debugging line to inspect the response
     // Catch any network-related errors
     return {
-      error: {
-        type: "NETWORK_ERROR",
-        message: err.message
-      }
+      error: createError("NETWORK_ERROR: "+url, err.cause, err.statusCode)
     };
   }
 }
@@ -69,7 +67,7 @@ function extractData(type, json) {
  */
 async function fetchF1Data(type, url) {
   const result = await fetchData(url); // Fetch data from the provided URL
-  // console.log('Fetch result:', result); // Debugging line to inspect the response
+  //console.log('Fetch result:', result); // Debugging line to inspect the response
 
   if (result.error) return result;
 

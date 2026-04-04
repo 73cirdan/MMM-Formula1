@@ -29,9 +29,9 @@ Module.register("MMM-Formula1", {
   dataConstructor: null,
   dataSchedule: null,
   endpoint: "/modules/MMM-Formula1/", // Base endpoint for API calls
-  nodatacountD: 0, // Track missing data for drivers
-  nodatacountC: 0, // Track missing data for constructors
-  nodatacountS: 0, // Track missing data for schedule
+  driverErrorCount: 0, // Track missing data for drivers
+  constructorErrorCount: 0, // Track missing data for constructors
+  scheduleErrorCount: 0, // Track missing data for schedule
   loading: true, // Loading state for the module
 
   // Circuit images for each Grand Prix location.
@@ -116,55 +116,55 @@ Module.register("MMM-Formula1", {
       }, this.config.screenRefreshInterval);
     }
   },
-
   // Handle socket notifications (received from the MagicMirror server).
-  socketNotificationReceived(notification, payload) {
-    Log.info(`${this.name} received a notification: ${notification}`);
 
-    // Process the received notifications and update data accordingly
-    switch (notification) {
-      case "DRIVER":
-        this.dataDriver = MMMFormula1Utils.processStandingsWithFanData(
-          payload,
-          "Driver",
-          this.config
-        );
-        this.nodatacountD = 0; // Reset missing data counter for drivers
-        break;
-      case "CONSTRUCTOR":
-        this.dataConstructor = MMMFormula1Utils.processStandingsWithFanData(
-          payload,
-          "Constructor",
-          this.config
-        );
-        this.nodatacountC = 0; // Reset missing data counter for constructors
-        break;
-      case "SCHEDULE":
-        this.dataSchedule = MMMFormula1Utils.processScheduleForNextRace(
-          payload,
-          this.circuitImages
-        );
-        this.nodatacountS = 0; // Reset missing data counter for schedule
-        break;
-      case "DRIVER_ERROR":
-        this.nodatacountD++; // Increment driver error counter
-        break;
-      case "CONSTRUCTOR_ERROR":
-        this.nodatacountC++; // Increment constructor error counter
-        break;
-      case "SCHEDULE_ERROR":
-        this.nodatacountS++; // Increment schedule error counter
-        break;
-      default:
-        Log.error(this.name + ": Notification not understood: " + notification); // Log unrecognized notifications
-        break;
-    }
+socketNotificationReceived(notification, payload) {
+  Log.info(`${this.name} received a notification: ${notification}`);
 
-    // Update loading state and refresh the DOM once data is received (or error occurs).
-    this.loading = false;
-    this.updateDom(this.config.animationSpeed);
-  },
+  // Data processors mapped to each notification type
+  const dataProcessors = {
+    DRIVER: this.processDriverData,
+    CONSTRUCTOR: this.processConstructorData,
+    SCHEDULE: this.processScheduleData,
+    DRIVER_ERROR: () => this.increaseErrorCount('driver'),
+    CONSTRUCTOR_ERROR: () => this.increaseErrorCount('constructor'),
+    SCHEDULE_ERROR: () => this.increaseErrorCount('schedule'),
+  };
 
+  // Check if the notification exists in the dataProcessors map and call the corresponding function
+  if (dataProcessors[notification]) {
+    dataProcessors[notification].call(this, payload);
+  } else {
+    Log.error(`${this.name}: Notification not understood: ${notification}`);
+  }
+
+  // Update loading state and refresh the DOM once data is received (or error occurs).
+  this.loading = false;
+  this.updateDom(this.config.animationSpeed);
+},
+
+// Process the driver data and reset error count
+processDriverData(payload) {
+  this.dataDriver = MMMFormula1Utils.processStandingsWithFanData(payload, "Driver", this.config);
+  this.driverErrorCount = 0;  // Reset error count
+},
+
+// Process the constructor data and reset error count
+processConstructorData(payload) {
+  this.dataConstructor = MMMFormula1Utils.processStandingsWithFanData(payload, "Constructor", this.config);
+  this.constructorErrorCount = 0;  // Reset error count
+},
+
+// Process the schedule data and reset error count
+processScheduleData(payload) {
+  this.dataSchedule = MMMFormula1Utils.processScheduleForNextRace(payload, this.circuitImages);
+  this.scheduleErrorCount = 0;  // Reset error count
+},
+// Dynamically access the error count property based on the type
+increaseErrorCount(type) {
+  const errorCountProperty = `${type}ErrorCount`;
+  this[errorCountProperty]++;
+},
   // Define the template file used for rendering the module.
   getTemplate() {
     return "templates\\mmm-formula1-standings.njk"; // Use the Nunjucks template for standings
@@ -174,9 +174,9 @@ Module.register("MMM-Formula1", {
   getHeader() {
     return (
       this.data.header +
-      (this.nodatacountD > 0 ? " (D:" + this.nodatacountD + ")" : "") + // Show driver data error count
-      (this.nodatacountC > 0 ? " (C:" + this.nodatacountC + ")" : "") + // Show constructor data error count
-      (this.nodatacountS > 0 ? " (S:" + this.nodatacountS + ")" : "") // Show schedule data error count
+      (this.driverErrorCount > 0 ? " (D:" + this.driverErrorCount + ")" : "") + // Show driver data error count
+      (this.constructorErrorCount > 0 ? " (C:" + this.constructorErrorCount + ")" : "") + // Show constructor data error count
+      (this.scheduleErrorCount > 0 ? " (S:" + this.scheduleErrorCount + ")" : "") // Show schedule data error count
     );
   },
 
