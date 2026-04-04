@@ -30,8 +30,9 @@ async function fetchData(url) {
   } catch (err) {
     //console.log('Fetch error:', err); // Debugging line to inspect the response
     // Catch any network-related errors
+    const message = err.cause ? err.cause : err.message;
     return {
-      error: createError("NETWORK_ERROR", err.cause, err.statusCode)
+      error: createError("NETWORK_ERROR", message, err.statusCode)
     };
   }
 }
