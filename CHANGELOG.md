@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file. See [commit
 
 ### Fixed
 
-* missing tracks and constrcutor logo's
+* missing tracks and constructor logo's
 
 ### Chores
 
