@@ -50,6 +50,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install moment for GitHub Actions
+        run: npm install moment # Install moment specifically for the CI environment
+
       - name: Run Unit Tests
         run: npm run test:unit
 
