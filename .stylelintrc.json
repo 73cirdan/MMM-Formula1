@@ -1,7 +1,12 @@
 {
-  "extends": ["stylelint-config-standard"],
+  "extends": ["stylelint-config-standard", "stylelint-prettier/recommended"],
   "plugins": ["stylelint-prettier"],
+  "ignoreFiles": ["node_modules/**/*.css", "coverage/**/*.css"],
   "rules": {
+    "declaration-property-value-no-unknown": true,
+    "block-no-empty": true,
+    "color-named": "never",
+    "font-weight-notation": "numeric",
     "prettier/prettier": true,
     "number-max-precision": 6
   }

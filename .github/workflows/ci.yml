@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      # Add more branches as necessary
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'  # Use the Node.js version specified in your package.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Prettier Check
+        run: npm run test:prettier
+
+      - name: Run ESLint Check
+        run: npm run test:js
+
+      - name: Run Stylelint Check
+        run: npm run test:css
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Unit Tests
+        run: npm run test:unit
+
+      - name: Run Tests with Coverage
+        run: npm run test:coverage
+
+  # Optional: If you want a separate job for generating coverage reports, you can add it here.
