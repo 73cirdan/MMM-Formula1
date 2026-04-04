@@ -118,53 +118,57 @@ Module.register("MMM-Formula1", {
   },
   // Handle socket notifications (received from the MagicMirror server).
 
-socketNotificationReceived(notification, payload) {
-  Log.info(`${this.name} received a notification: ${notification}`);
+  socketNotificationReceived(notification, payload) {
+    Log.info(`${this.name} received a notification: ${notification}`);
 
-  // Data processors mapped to each notification type
-  const dataProcessors = {
-    DRIVER: this.processDriverData,
-    CONSTRUCTOR: this.processConstructorData,
-    SCHEDULE: this.processScheduleData,
-    DRIVER_ERROR: () => this.increaseErrorCount('driver'),
-    CONSTRUCTOR_ERROR: () => this.increaseErrorCount('constructor'),
-    SCHEDULE_ERROR: () => this.increaseErrorCount('schedule'),
-  };
+    // Data processors mapped to each notification type
+    const dataProcessors = {
+      DRIVER: this.processDriverData,
+      CONSTRUCTOR: this.processConstructorData,
+      SCHEDULE: this.processScheduleData,
+      DRIVER_ERROR: () => this.increaseErrorCount("driver"),
+      CONSTRUCTOR_ERROR: () => this.increaseErrorCount("constructor"),
+      SCHEDULE_ERROR: () => this.increaseErrorCount("schedule")
+    };
 
-  // Check if the notification exists in the dataProcessors map and call the corresponding function
-  if (dataProcessors[notification]) {
-    dataProcessors[notification].call(this, payload);
-  } else {
-    Log.error(`${this.name}: Notification not understood: ${notification}`);
-  }
+    // Check if the notification exists in the dataProcessors map and call the corresponding function
+    if (dataProcessors[notification]) {
+      dataProcessors[notification].call(this, payload);
+    } else {
+      Log.error(`${this.name}: Notification not understood: ${notification}`);
+    }
 
-  // Update loading state and refresh the DOM once data is received (or error occurs).
-  this.loading = false;
-  this.updateDom(this.config.animationSpeed);
-},
+    // Update loading state and refresh the DOM once data is received (or error occurs).
+    this.loading = false;
+    this.updateDom(this.config.animationSpeed);
+  },
 
-// Process the driver data and reset error count
-processDriverData(payload) {
-  this.dataDriver = MMMFormula1Utils.processStandingsWithFanData(payload, "Driver", this.config);
-  this.driverErrorCount = 0;  // Reset error count
-},
+  // Process the driver data and reset error count
+  processDriverData(payload) {
+    this.dataDriver = MMMFormula1Utils.processStandingsWithFanData(payload, "Driver", this.config);
+    this.driverErrorCount = 0; // Reset error count
+  },
 
-// Process the constructor data and reset error count
-processConstructorData(payload) {
-  this.dataConstructor = MMMFormula1Utils.processStandingsWithFanData(payload, "Constructor", this.config);
-  this.constructorErrorCount = 0;  // Reset error count
-},
+  // Process the constructor data and reset error count
+  processConstructorData(payload) {
+    this.dataConstructor = MMMFormula1Utils.processStandingsWithFanData(
+      payload,
+      "Constructor",
+      this.config
+    );
+    this.constructorErrorCount = 0; // Reset error count
+  },
 
-// Process the schedule data and reset error count
-processScheduleData(payload) {
-  this.dataSchedule = MMMFormula1Utils.processScheduleForNextRace(payload, this.circuitImages);
-  this.scheduleErrorCount = 0;  // Reset error count
-},
-// Dynamically access the error count property based on the type
-increaseErrorCount(type) {
-  const errorCountProperty = `${type}ErrorCount`;
-  this[errorCountProperty]++;
-},
+  // Process the schedule data and reset error count
+  processScheduleData(payload) {
+    this.dataSchedule = MMMFormula1Utils.processScheduleForNextRace(payload, this.circuitImages);
+    this.scheduleErrorCount = 0; // Reset error count
+  },
+  // Dynamically access the error count property based on the type
+  increaseErrorCount(type) {
+    const errorCountProperty = `${type}ErrorCount`;
+    this[errorCountProperty]++;
+  },
   // Define the template file used for rendering the module.
   getTemplate() {
     return "templates\\mmm-formula1-standings.njk"; // Use the Nunjucks template for standings

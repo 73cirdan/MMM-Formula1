@@ -9,7 +9,6 @@
     root.MMMFormula1Utils = factory(moment); // `moment` for the browser
   }
 })(typeof self !== "undefined" ? self : this, function (moment) {
-
   /*
    * Helper Functions (General Utility)
    */

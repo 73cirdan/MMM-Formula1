@@ -19,7 +19,9 @@ async function fetchData(url) {
 
     // Check if the response status is not OK (e.g., 404 or 500)
     if (!response.ok) {
-      return {error: createError("HTTP_ERROR", `HTTP ${response.status} for ${url}`, response.status)};
+      return {
+        error: createError("HTTP_ERROR", `HTTP ${response.status} for ${url}`, response.status)
+      };
     }
 
     // Parse the response as JSON
@@ -29,7 +31,7 @@ async function fetchData(url) {
     //console.log('Fetch error:', err); // Debugging line to inspect the response
     // Catch any network-related errors
     return {
-      error: createError("NETWORK_ERROR: "+url, err.cause, err.statusCode)
+      error: createError("NETWORK_ERROR: " + url, err.cause, err.statusCode)
     };
   }
 }
