@@ -18,7 +18,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '20'  # Use the Node.js version specified in your package.json
+          node-version: '22'  # Use the Node.js version specified in your package.json
 
       - name: Install dependencies
         run: npm install
@@ -45,7 +45,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install dependencies
         run: npm install
