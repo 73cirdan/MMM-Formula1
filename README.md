@@ -55,10 +55,7 @@ git clone https://github.com/ianperrin/MMM-Formula1
 
 Install dependencies:
 
-```bash
-cd ~/MagicMirror/modules/MMM-Formula1
-npm install --production
-```
+No longer needed, the module does not use any external dependencies.
 
 Configure the module in your `config/config.js` file.
 
@@ -70,13 +67,6 @@ If you want to update your MMM-Formula1 module to the latest version, use your t
 git pull
 ```
 
-(Re)install dependencies.
-
-```bash
-cd ~/MagicMirror/modules/MMM-Formula1
-npm install --production
-```
-
 If you haven't changed the modules, this should work without any problems.
 Type `git status` to see your changes, if there are any, you can reset them with `git reset --hard`. After that, git pull should be possible.
 
@@ -85,7 +75,6 @@ Type `git status` to see your changes, if there are any, you can reset them with
 To use this module, add it to the modules array in the `config/config.js` file:
 
 ```javascript
-modules: [
   {
     module: "MMM-Formula1",
     position: "top_right",
@@ -93,8 +82,7 @@ modules: [
     config: {
       // Optional configuration options - see https://github.com/73cirdan/MMM-Formula1#configuration-options
     }
-  }
-];
+  },
 ```
 
 ## Configuration options
@@ -121,7 +109,6 @@ The following properties can be configured:
 
 - ianperrins first version which led to this version. Major changes:
   - removed f1api from the package.json and rewrote node_helper
-  - removed dev tools for now, will learn it and apply it in the future ;-)
   - rewrote nunjucks template to support different display options
   - removed ical dependency and possibility to use magicmirror calendar. The default upcomming weekend and next race are shown in what used to be the standing module
   - updated flags css
