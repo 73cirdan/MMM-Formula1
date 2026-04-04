@@ -6,34 +6,35 @@
  */
 
 Module.register("MMM-Formula1", {
-  // Default module config.
+  // Default module configuration options.
   defaults: {
-    season: "current",
-    maxRowsDriver: 5,
-    maxRowsConstructor: 5,
-    showStanding: "MIX",
-    loadDriver: true, // is set automatically is DRIVER, MIX, BOTH is used in showStanding
-    loadConstructor: false, // is set automatically is CONSTRUCTOR, MIX, BOTH is used in showStanding
-    showSchedule: true, // to show timing of the raceweekend, racemap, nextrace
-    fade: false, // effect, only for driver or constructor tables, fade to black in the list
-    fadePoint: 0.3,
-    reloadInterval: 30 * 60 * 1000, // every 30 minutes, calling the api for new data
-    screenRefreshInterval: 30 * 1000, // every 30 seconds , only used when showStanding=MIX
-    animationSpeed: 2.5 * 1000, // 2.5 seconds
-    grayscale: false, // used for the flag colors.
-    showNextRace: true // When showing the raceweekend schedule, also show the next race
+    season: "current", // Default season is "current"
+    maxRowsDriver: 5, // Max number of driver standings to show
+    maxRowsConstructor: 5, // Max number of constructor standings to show
+    showStanding: "MIX", // Default display type (MIX: drivers and constructors)
+    loadDriver: true, // Load driver data if required by showStanding config
+    loadConstructor: false, // Load constructor data if required by showStanding config
+    showSchedule: true, // Show the race schedule
+    fade: false, // Apply fade effect in standings list
+    fadePoint: 0.3, // Fade effect starts at this point in the standings list
+    reloadInterval: 30 * 60 * 1000, // Interval to reload data (30 minutes)
+    screenRefreshInterval: 30 * 1000, // Interval to refresh the screen (30 seconds)
+    animationSpeed: 2.5 * 1000, // Animation speed (2.5 seconds)
+    grayscale: false, // Enable grayscale for flag colors
+    showNextRace: true // Show the next race when displaying the schedule
   },
 
-  // Store the Ergast data in an object.
+  // Store data for driver, constructor, and schedule in local variables.
   dataDriver: null,
   dataConstructor: null,
   dataSchedule: null,
-  endpoint: "/modules/MMM-Formula1/",
-  nodatacountD: 0,
-  nodatacountC: 0,
-  nodatacountS: 0,
-  loading: true, // A loading boolean.
+  endpoint: "/modules/MMM-Formula1/", // Base endpoint for API calls
+  nodatacountD: 0, // Track missing data for drivers
+  nodatacountC: 0, // Track missing data for constructors
+  nodatacountS: 0, // Track missing data for schedule
+  loading: true, // Loading state for the module
 
+  // Circuit images for each Grand Prix location.
   circuitImages: {
     bahrain: "/bahrain.svg",
     jeddah: "/jeddah.svg",
@@ -62,12 +63,17 @@ Module.register("MMM-Formula1", {
     yas_marina: "/abudhabi.svg"
   },
 
-  // Subclass getStyles method.
-  getStyles() {
-    return ["font-awesome.css", "MMM-Formula1.css"];
+  // Get the external script(s) needed for the module.
+  getScripts() {
+    return ["MMM-Formula1-utils.js"]; // Add the utility script
   },
 
-  // Subclass getTranslations method.
+  // Get the stylesheets needed for the module.
+  getStyles() {
+    return ["font-awesome.css", "MMM-Formula1.css"]; // Font-awesome and custom CSS
+  },
+
+  // Get translation files for different languages.
   getTranslations() {
     return {
       en: "translations/en.json",
@@ -83,301 +89,157 @@ Module.register("MMM-Formula1", {
     };
   },
 
-  // Subclass start method.
+  // Start the module and validate the config.
   start() {
     Log.info(`Starting module: ${this.name}`);
-    // Validate config options
-    this.validateConfig();
-    // Add custom filters
-    this.addFilters();
-    // Load nationalities & start polling
-    const self = this;
-    this.loadNationalities(function (response) {
-      // Parse JSON string into object
-      self.nationalities = JSON.parse(response);
-      // Start helper and data polling
-      self.sendSocketNotification("CONFIG", self.config);
-    });
+    this.validateConfig(); // Check the configuration validity
+
+    // Load nationalities data (via API) and initialize filters
+    var self = this;
+    var filePath = self.endpoint + "nationalities.json";
+    MMMFormula1Utils.loadNationalities(filePath)
+      .then(function (nationalitiesMap) {
+        self.nationalities = nationalitiesMap; // Store nationalities map
+        self.addFilters(); // Add custom Nunjucks filters
+      })
+      .catch(function (error) {
+        Log.error("Error loading nationalities:", error); // Log error if nationalities loading fails
+      });
+
+    // Start polling for data (via helper) and send configuration to socket.
+    this.sendSocketNotification("CONFIG", this.config);
+
+    // If the showStanding config is "MIX", update the DOM periodically.
     if (this.config.showStanding === "MIX") {
       this.scheduledTimer = setInterval(function () {
-        self.updateDom(self.config.animationSpeed);
+        self.updateDom(self.config.animationSpeed); // Periodic DOM updates
       }, this.config.screenRefreshInterval);
     }
   },
-  // Subclass socketNotificationReceived method.
+
+  // Handle socket notifications (received from the MagicMirror server).
   socketNotificationReceived(notification, payload) {
     Log.info(`${this.name} received a notification: ${notification}`);
 
+    // Process the received notifications and update data accordingly
     switch (notification) {
       case "DRIVER":
-        this.prepareDriver(payload);
+        this.dataDriver = MMMFormula1Utils.processStandingsWithFanData(
+          payload,
+          "Driver",
+          this.config
+        );
+        this.nodatacountD = 0; // Reset missing data counter for drivers
         break;
       case "CONSTRUCTOR":
-        this.prepareConstructor(payload);
+        this.dataConstructor = MMMFormula1Utils.processStandingsWithFanData(
+          payload,
+          "Constructor",
+          this.config
+        );
+        this.nodatacountC = 0; // Reset missing data counter for constructors
         break;
       case "SCHEDULE":
-        this.prepareData(payload);
+        this.dataSchedule = MMMFormula1Utils.processScheduleForNextRace(
+          payload,
+          this.circuitImages
+        );
+        this.nodatacountS = 0; // Reset missing data counter for schedule
         break;
       case "DRIVER_ERROR":
-        this.nodatacountD++;
-        break; // if available use stale data
+        this.nodatacountD++; // Increment driver error counter
+        break;
       case "CONSTRUCTOR_ERROR":
-        this.nodatacountC++;
+        this.nodatacountC++; // Increment constructor error counter
         break;
       case "SCHEDULE_ERROR":
-        this.nodatacountS++;
+        this.nodatacountS++; // Increment schedule error counter
         break;
       default:
-        Log.error(this.name + ": Notification not understood: " + notification);
+        Log.error(this.name + ": Notification not understood: " + notification); // Log unrecognized notifications
         break;
     }
-    // all responses, some data or even errors wil end loading and start showing (possible with missing data)
+
+    // Update loading state and refresh the DOM once data is received (or error occurs).
     this.loading = false;
     this.updateDom(this.config.animationSpeed);
   },
+
+  // Define the template file used for rendering the module.
   getTemplate() {
-    return "templates\\mmm-formula1-standings.njk";
+    return "templates\\mmm-formula1-standings.njk"; // Use the Nunjucks template for standings
   },
-  // use the header to inform the user about stale data
-  getHeader: function () {
+
+  // Use the header to inform users about stale data.
+  getHeader() {
     return (
       this.data.header +
-      (this.nodatacountD > 0 ? " (D:" + this.nodatacountD + ")" : "") +
-      (this.nodatacountC > 0 ? " (C:" + this.nodatacountC + ")" : "") +
-      (this.nodatacountS > 0 ? " (S:" + this.nodatacountS + ")" : "")
+      (this.nodatacountD > 0 ? " (D:" + this.nodatacountD + ")" : "") + // Show driver data error count
+      (this.nodatacountC > 0 ? " (C:" + this.nodatacountC + ")" : "") + // Show constructor data error count
+      (this.nodatacountS > 0 ? " (S:" + this.nodatacountS + ")" : "") // Show schedule data error count
     );
   },
+
+  // Prepare the template data to be passed to Nunjucks.
   getTemplateData() {
     const templateData = {
-      loading: this.loading,
-      config: this.config,
-      dataD: this.dataDriver,
-      dataC: this.dataConstructor,
-      dataS: this.dataSchedule,
-      endpointconstructors: this.endpoint + "/constructors/",
-      endpointtracks: this.endpoint + (this.config.grayscale ? "tracks" : "trackss"),
-      identifier: this.identifier,
-      timeStamp: this.dataRefreshTimeStamp
+      loading: this.loading, // Whether the module is still loading data
+      config: this.config, // Current module configuration
+      dataD: this.dataDriver, // Driver standings data
+      dataC: this.dataConstructor, // Constructor standings data
+      dataS: this.dataSchedule, // Schedule data
+      endpointconstructors: this.endpoint + "/constructors/", // Endpoint for constructor data
+      endpointtracks: this.endpoint + (this.config.grayscale ? "tracks" : "trackss"), // Endpoint for track data
+      identifier: this.identifier, // Unique identifier for the module
+      timeStamp: this.dataRefreshTimeStamp // Last data refresh timestamp
     };
     return templateData;
   },
-  prepareDriver(payload) {
-    if (
-      payload &&
-      payload.DriverStandings &&
-      payload.DriverStandings.length > 0 &&
-      this.config.maxRowsDriver
-    ) {
-      //check for fandriver, save fandriver before slice if fandriver not part of result
-      const fandriverpos = this.findFanDriverPosition(payload.DriverStandings);
-      payload.DriverStandings = payload.DriverStandings.slice(0, this.config.maxRowsDriver);
-      if (fandriverpos && fandriverpos.position > this.config.maxRowsDriver) {
-        payload.DriverStandings.push(fandriverpos);
-      }
-    }
-    this.nodatacountD = 0;
-    this.dataDriver = payload;
-  },
-  prepareConstructor(payload) {
-    if (
-      payload &&
-      payload.ConstructorStandings &&
-      payload.ConstructorStandings.length > 0 &&
-      this.config.maxRowsConstructor
-    ) {
-      //check for fanconstructor, save constructor before slice if constructor not part of result
-      const fanconstructorpos = this.findFanConstructorPosition(payload.ConstructorStandings);
-      payload.ConstructorStandings = payload.ConstructorStandings.slice(
-        0,
-        this.config.maxRowsConstructor
-      );
-      if (fanconstructorpos && fanconstructorpos.position > this.config.maxRowsConstructor) {
-        payload.ConstructorStandings.push(fanconstructorpos);
-      }
-    }
-    this.nodatacountC = 0;
-    this.dataConstructor = payload;
-  },
-  prepareData(schedule) {
-    const yesterday = moment().subtract(1, "day").format("YYYY-MM-DD");
-    const currentround = this.findNextRound(schedule, yesterday);
 
-    let templateScheduleData = null;
-    // if currentround is null, no races are scheduled, dont display
-    if (currentround) {
-      templateScheduleData = {
-        season: schedule[0].season,
-        round: currentround,
-        raceName: schedule[currentround - 1].raceName,
-        nextRaceName: currentround < schedule.length ? schedule[currentround].raceName : null,
-        circuitName: schedule[currentround - 1].Circuit.circuitName,
-        circuitImage: this.circuitImages[schedule[currentround - 1].Circuit.circuitId],
-        raceDate: this.formatDateAndTime(schedule[currentround - 1]),
-        nextRaceDate:
-          currentround < schedule.length ? this.formatDateAndTime(schedule[currentround]) : null,
-        qualifyingDate: this.formatDateAndTime(schedule[currentround - 1].Qualifying),
-        pract1Date: this.formatDateAndTime(schedule[currentround - 1].FirstPractice),
-        pract2Date: this.formatDateAndTime(schedule[currentround - 1].SecondPractice),
-        pract3Date: this.formatDateAndTime(schedule[currentround - 1].ThirdPractice),
-        // this might break with jolpi. sprintQualifying was in SecondPractise on ergast,
-        //  might need extra line here and in the template:
-        sprintQualifyingDate: this.formatDateAndTime(schedule[currentround - 1].SprintQualifying),
-        sprintDate: this.formatDateAndTime(schedule[currentround - 1].Sprint),
-        identifier: this.identifier,
-        timeStamp: this.dataRefreshTimeStamp
-      };
-    }
-    this.nodatacountS = 0;
-    this.dataSchedule = templateScheduleData;
-  },
-  // Transform geo race time to local time, fill missing fields with hourglass.
-  formatDateAndTime(dateTime) {
-    if (!dateTime) {
-      return null;
-    }
-
-    const waitingfortime = '<i class="small fa fa-hourglass"></i>';
-    if (dateTime.date && dateTime.time) {
-      if (config.timeFormat === 24) {
-        return moment(dateTime.date + "T" + dateTime.time).format("DD MMM HH:mm");
-      } else {
-        return moment(dateTime.date + "T" + dateTime.time).format("DD MMM hh:mm A");
-      }
-    }
-    if (dateTime.date) {
-      return moment(dateTime.date).format("DD MMM") + waitingfortime;
-    }
-    return waitingfortime;
-  },
-  // Find out which position a fan has
-  findFanDriverPosition(standings) {
-    if (!this.config.fanDriverCode) {
-      return null;
-    }
-    for (var i = 0; i < standings.length; i++) {
-      if (standings[i].Driver.code === this.config.fanDriverCode.toUpperCase()) {
-        return standings[i];
-      }
-    }
-    return null;
-  },
-  // Find out which position a constructor has
-  findFanConstructorPosition(standings) {
-    if (!this.config.fanConstructorCode) {
-      return null;
-    }
-
-    for (var i = 0; i < standings.length; i++) {
-      if (standings[i].Constructor.constructorId === this.config.fanConstructorCode.toLowerCase()) {
-        return standings[i];
-      }
-    }
-    return null;
-  },
-  // finds the first date in a sorted array of date after yesterday
-  findNextRound: function (dates, yesterday) {
-    let i = 0;
-    let round = null;
-    while (!round && i < dates.length) {
-      let aDate = moment(dates[i].date, "YYYY-MM-DD", true);
-      if (aDate.isAfter(yesterday)) {
-        round = dates[i].round;
-      }
-      i++;
-    }
-    return round;
-  },
-  // check config and correct if needed
+  // Check for errors in the configuration and fix if necessary.
   validateConfig() {
-    // Validate module type
-    let configType = this.config.showStanding.toUpperCase();
+    let configType = this.config.showStanding.toUpperCase(); // Normalize the standing type config
     const validTypes = ["NONE", "DRIVER", "CONSTRUCTOR", "BOTH", "MIX"];
-    if (validTypes.indexOf(configType) === -1) {
-      this.config.showStanding = configType = "MIX";
+
+    // Default to MIX if an invalid config value is provided
+    if (!validTypes.includes(configType)) {
+      this.config.showStanding = "MIX";
     }
-    switch (configType) {
-      case "DRIVER":
-        this.config.loadDriver = true;
-        break;
-      case "CONSTRUCTOR":
-        this.config.loadConstructor = true;
-        break;
-      case "BOTH":
-      case "MIX":
-        this.config.loadDriver = true;
-        this.config.loadConstructor = true;
-        break;
-      default:
-        this.config.loadDriver = false;
-        this.config.loadConstructor = false;
-        break;
-    }
-    // If nothing to show, make sure there is someting to show;
-    if (!this.config.schedule && !this.config.loadDriver && !this.config.loadConstructor) {
-      this.config.showSchedule = true;
+
+    // Set flags for loading driver and constructor data based on showStanding config
+    this.config.loadDriver = ["DRIVER", "BOTH", "MIX"].includes(configType);
+    this.config.loadConstructor = ["CONSTRUCTOR", "BOTH", "MIX"].includes(configType);
+
+    // Ensure there is something to show if no data is configured to be displayed
+    if (!this.config.showSchedule && !this.config.loadDriver && !this.config.loadConstructor) {
+      this.config.showSchedule = true; // Default to showing schedule if nothing else is enabled
     }
   },
-  // Filters are methods called from the nunjucks template
+
+  // Add custom Nunjucks filters to the template engine.
   addFilters() {
-    const env = this.nunjucksEnvironment();
-    env.addFilter("getCodeFromNationality", this.getCodeFromNationality.bind(this));
-    env.addFilter("getFadeOpacity", this.getFadeOpacity.bind(this));
-    env.addFilter("showStanding", this.showStanding.bind(this));
-    env.addFilter("translate", this.translate.bind(this));
+    const env = this.nunjucksEnvironment(); // Get the Nunjucks environment
+    env.addFilter("getCodeFromNationality", (nationality) => {
+      return MMMFormula1Utils.getCodeFromNationality(this.nationalities, nationality); // Get nationality code
+    });
+    env.addFilter("getFadeOpacity", this.getFadeOpacity.bind(this)); // Add fade opacity filter
+    env.addFilter("showStanding", (showType) =>
+      MMMFormula1Utils.shouldShowStanding(
+        this.config.showStanding.toUpperCase(),
+        showType,
+        moment().second()
+      )
+    );
+    env.addFilter("translate", this.translate.bind(this)); // Add translation filter
   },
-  // used to fade to black in the Driver or Constructor list, use config.fade = true
+
+  // Used to calculate fade effect in the standings list based on configuration.
   getFadeOpacity(index, itemCount) {
     const fadeStart = itemCount * this.config.fadePoint;
     const fadeItemCount = itemCount - fadeStart + 1;
     if (this.config.fade && index > fadeStart) {
-      return 1 - (index - fadeStart) / fadeItemCount;
+      return 1 - (index - fadeStart) / fadeItemCount; // Apply fade effect
     }
-    return 1;
-  },
-  // used to show the flags
-  getCodeFromNationality(nationality) {
-    for (let i = 0, len = this.nationalities.length; i < len; i++) {
-      if (this.nationalities[i].demonym === nationality) {
-        return this.nationalities[i].code.toLowerCase();
-      }
-    }
-    return "";
-  },
-  // used to decide which part of the template should show
-  showStanding(showType) {
-    const configType = this.config.showStanding.toUpperCase();
-    const validTypes = ["DRIVER", "CONSTRUCTOR"];
-    const infirsthalf = 60 - moment().second() > 30; // show Driver in first half of minute, Cons in 2nd
-
-    switch (configType) {
-      case "DRIVER":
-      case "CONSTRUCTOR":
-        return configType === showType;
-      case "BOTH":
-        return validTypes.indexOf(showType) === -1 ? false : true;
-      case "MIX":
-        if (showType === "DRIVER" && infirsthalf) {
-          return true;
-        } else if (showType === "CONSTRUCTOR" && !infirsthalf) {
-          return true;
-        }
-        return false;
-      default:
-        break;
-    }
-    return false;
-  },
-  // used for the flags
-  loadNationalities(callback) {
-    const xobj = new XMLHttpRequest();
-    const path = this.file("nationalities.json");
-    xobj.overrideMimeType("application/json");
-    xobj.open("GET", path, true);
-    xobj.onreadystatechange = function () {
-      if (xobj.readyState === 4 && xobj.status === 200) {
-        callback(xobj.responseText);
-      }
-    };
-    xobj.send(null);
+    return 1; // No fade for items before the fade point
   }
 });

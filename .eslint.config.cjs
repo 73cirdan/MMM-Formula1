@@ -1,10 +1,11 @@
 const jsdoc = require("eslint-plugin-jsdoc");
 const prettier = require("eslint-config-prettier");
+const globals = require("globals");
 
 module.exports = [
   // 🌐 Frontend (MagicMirror module)
   {
-    files: ["MMM-Formula1.js"],
+    files: ["MMM-Formula1.js", "MMM-Formula1-utils.js" ],
 
     languageOptions: {
       ecmaVersion: "latest",
@@ -15,19 +16,14 @@ module.exports = [
         Module: "readonly",
         Log: "readonly",
         MM: "readonly",
+        MMMFormula1Utils: "readonly",
         config: "readonly",
         moment: "readonly",
 
         // Browser globals
-        window: "readonly",
-        document: "readonly",
-        console: "readonly",
-        setTimeout: "readonly",
-        clearTimeout: "readonly",
-        setInterval: "readonly",
-        clearInterval: "readonly",
-        XMLHttpRequest: "readonly",
-      },
+        ...globals.browser,
+        ...globals.node,
+      }
     },
 
     plugins: { jsdoc },
@@ -48,14 +44,8 @@ module.exports = [
       sourceType: "script",
 
       globals: {
-        require: "readonly",
-        module: "readonly",
-        __dirname: "readonly",
-        process: "readonly",
-        console: "readonly",
-        setTimeout: "readonly",
-        clearTimeout: "readonly",
-      },
+        ...globals.node,
+      }
     },
 
     plugins: { jsdoc },
