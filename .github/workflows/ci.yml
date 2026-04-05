@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v3 # Updated to v3 for Node.js 22+ compatibility
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3 # Updated to v3 for Node.js 22+ compatibility
+        uses: actions/setup-node@v6 # Updated to v3 for Node.js 22+ compatibility
         with:
           node-version: "22" # Use the Node.js version specified in your package.json
 
@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v3 # Updated to v3 for Node.js 22+ compatibility
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3 # Updated to v3
+        uses: actions/setup-node@v6 # Updated to v3
         with:
           node-version: "22" # Or use 24 if you prefer to opt into Node.js 24 now
 
