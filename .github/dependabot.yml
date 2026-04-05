@@ -1,0 +1,11 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+
+  - package-ecosystem: npm    # Specify the package manager (npm in this case)
+    directory: /               # Location of your package.json file (root of the repository in this example)
+    schedule:
+      interval: weekly         # How often Dependabot checks for updates (can also be "daily", "monthly")
