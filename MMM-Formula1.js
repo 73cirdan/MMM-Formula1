@@ -162,7 +162,12 @@ Module.register("MMM-Formula1", {
 
   // Process the schedule data and reset error count
   processScheduleData(payload) {
-    this.dataSchedule = MMMFormula1Utils.processScheduleForNextRace(payload, this.circuitImages);
+    this.dataSchedule = MMMFormula1Utils.processScheduleForNextRace(
+      payload,
+      this.circuitImages,
+      config.locale,
+      config.timeFormat
+    );
     this.scheduleErrorCount = 0; // Reset error count
   },
   // Dynamically access the error count property based on the type
@@ -232,7 +237,8 @@ Module.register("MMM-Formula1", {
       MMMFormula1Utils.shouldShowStanding(
         this.config.showStanding.toUpperCase(),
         showType,
-        moment().second()
+        //moment().second()
+        new Date().getSeconds()
       )
     );
     env.addFilter("translate", this.translate.bind(this)); // Add translation filter
