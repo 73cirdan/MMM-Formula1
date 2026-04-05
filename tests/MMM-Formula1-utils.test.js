@@ -50,20 +50,27 @@ describe("MMMFormula1Utils Functions", () => {
   // Test for formatDateAndTime function
   it("should format date and time correctly in 24-hour format", () => {
     const dateTime = { date: "2026-03-22", time: "12:30" };
-    const formatted = MMMFormula1Utils.formatDateAndTime(dateTime, 24);
-    expect(formatted).toBe("22 Mar 12:30");
+    const formatted = MMMFormula1Utils.formatDateAndTime(dateTime, 24, "en");
+    expect(formatted).toBe("Mar 22, 12:30");
+  });
+
+  // Test for formatDateAndTime function in nl locale
+  it("should format date and time correctly in 24-hour format", () => {
+    const dateTime = { date: "2026-03-22", time: "12:30" };
+    const formatted = MMMFormula1Utils.formatDateAndTime(dateTime, 24, "nl");
+    expect(formatted).toBe("22 mrt, 12:30");
   });
 
   it("should format date and time correctly in 12-hour format", () => {
     const dateTime = { date: "2026-03-22", time: "12:30" };
-    const formatted = MMMFormula1Utils.formatDateAndTime(dateTime, 12);
-    expect(formatted).toBe("22 Mar 12:30 PM");
+    const formatted = MMMFormula1Utils.formatDateAndTime(dateTime, 12, "en");
+    expect(formatted).toBe("Mar 22, 12:30 PM");
   });
 
   it("should return only date if time is missing", () => {
     const dateTime = { date: "2026-03-22" };
     const formatted = MMMFormula1Utils.formatDateAndTime(dateTime, 24);
-    expect(formatted).toBe('22 Mar <i class="small fa fa-hourglass"></i>');
+    expect(formatted).toBe('Mar 22 <i class="small fa fa-hourglass"></i>');
   });
 
   it("should return null if date is missing", () => {
