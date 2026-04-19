@@ -12,124 +12,6 @@ if (typeof module !== "undefined" && module.exports) {
   MMMFormula1Utils = window.MMMFormula1Utils;
 }
 
-describe("sliceStandings", () => {
-  it("should return the full standings if maxRows is larger than the standings length", () => {
-    const standings = [{ position: 1 }, { position: 2 }];
-    const result = MMMFormula1Utils.sliceStandings(standings, 3, null);
-    expect(result).toEqual(standings);
-  });
-
-  it("should slice the standings to maxRows", () => {
-    const standings = [{ position: 1 }, { position: 2 }, { position: 3 }];
-    const result = MMMFormula1Utils.sliceStandings(standings, 2, null);
-    expect(result.length).toBe(2);
-  });
-
-  it("should add fan position if needed", () => {
-    const standings = [{ position: 1 }, { position: 2 }];
-    const fanPosition = { position: 3, Driver: { code: "LEC" } };
-    const result = MMMFormula1Utils.sliceStandings(standings, 2, fanPosition);
-    expect(result.length).toBe(3); // includes the fanPosition
-    expect(result[2].Driver.code).toBe("LEC");
-  });
-
-  it("should return empty array if standings are empty", () => {
-    const standings = [];
-    const result = MMMFormula1Utils.sliceStandings(standings, 2, null);
-    expect(result).toEqual([]);
-  });
-
-  it("should return empty array if maxRows is zero", () => {
-    const standings = [{ position: 1 }];
-    const result = MMMFormula1Utils.sliceStandings(standings, 0, null);
-    expect(result).toEqual([]);
-  });
-});
-
-describe("MMMFormula1Utils Functions", () => {
-  // Test for formatDateAndTime function
-  it("should format date and time correctly in 24-hour format", () => {
-    const dateTime = { date: "2026-03-22", time: "12:30" };
-    const formatted = MMMFormula1Utils.formatDateAndTime(dateTime, 24, "en");
-    expect(formatted).toBe("Mar 22, 12:30");
-  });
-
-  // Test for formatDateAndTime function in nl locale
-  it("should format date and time correctly in 24-hour format", () => {
-    const dateTime = { date: "2026-03-22", time: "12:30" };
-    const formatted = MMMFormula1Utils.formatDateAndTime(dateTime, 24, "nl");
-    expect(formatted).toBe("22 mrt, 12:30");
-  });
-
-  it("should format date and time correctly in 12-hour format", () => {
-    const dateTime = { date: "2026-03-22", time: "12:30" };
-    const formatted = MMMFormula1Utils.formatDateAndTime(dateTime, 12, "en");
-    expect(formatted).toBe("Mar 22, 12:30 PM");
-  });
-
-  it("should return only date if time is missing", () => {
-    const dateTime = { date: "2026-03-22" };
-    const formatted = MMMFormula1Utils.formatDateAndTime(dateTime, 24);
-    expect(formatted).toBe('Mar 22 <i class="small fa fa-hourglass"></i>');
-  });
-
-  it("should return null if date is missing", () => {
-    const dateTime = {};
-    const formatted = MMMFormula1Utils.formatDateAndTime(dateTime, 24);
-    expect(formatted).toBeNull();
-  });
-
-  // Test for findNextRound function
-  it("should find the next race round correctly", () => {
-    const dates = [
-      { date: "2026-03-22", round: 1 },
-      { date: "2026-03-28", round: 2 }
-    ];
-    const yesterday = "2026-03-21";
-    const nextRound = MMMFormula1Utils.findNextRound(dates, yesterday);
-    expect(nextRound).toBe(1); // should return the first round
-  });
-
-  it("should return null if no upcoming round is found", () => {
-    const dates = [
-      { date: "2026-03-22", round: 1 },
-      { date: "2026-03-28", round: 2 }
-    ];
-    const yesterday = "2026-03-29"; // no rounds after this date
-    const nextRound = MMMFormula1Utils.findNextRound(dates, yesterday);
-    expect(nextRound).toBeNull(); // no round should be found
-  });
-});
-
-describe("findFan function", () => {
-  it("finds fan driver correctly", () => {
-    const standings = [{ Driver: { code: "VER" } }, { Driver: { code: "LEC" } }];
-
-    // Call findFan with `findFanFn` set to true (for drivers)
-    expect(MMMFormula1Utils.findFan(standings, true, "lec")).toEqual({
-      Driver: { code: "LEC" }
-    });
-
-    // If no driver is found
-    expect(MMMFormula1Utils.findFan(standings, true, "HAM")).toBeNull();
-  });
-
-  it("finds fan constructor correctly", () => {
-    const standings = [
-      { Constructor: { constructorId: "red_bull" } },
-      { Constructor: { constructorId: "ferrari" } }
-    ];
-
-    // Call findFan with `findFanFn` set to false (for constructors)
-    expect(MMMFormula1Utils.findFan(standings, false, "RED_BULL")).toEqual({
-      Constructor: { constructorId: "red_bull" }
-    });
-
-    // If no constructor is found
-    expect(MMMFormula1Utils.findFan(standings, false, "MERC")).toBeNull();
-  });
-});
-
 describe("processStandingsWithFanData", () => {
   const standings = [
     { position: 1, Driver: { code: "VER" } },
@@ -146,7 +28,7 @@ describe("processStandingsWithFanData", () => {
 
     const result = MMMFormula1Utils.processStandingsWithFanData(
       { DriverStandings: standings },
-      "Driver",
+      "DriverStandings",
       config
     );
 
@@ -162,7 +44,7 @@ describe("processStandingsWithFanData", () => {
 
     const result = MMMFormula1Utils.processStandingsWithFanData(
       { DriverStandings: standings },
-      "Driver",
+      "DriverStandings",
       config
     );
 
@@ -177,7 +59,7 @@ describe("processStandingsWithFanData", () => {
 
     const result = MMMFormula1Utils.processStandingsWithFanData(
       { DriverStandings: [] },
-      "Driver",
+      "DriverStandings",
       config
     );
 
@@ -197,12 +79,161 @@ describe("processStandingsWithFanData", () => {
 
     const result = MMMFormula1Utils.processStandingsWithFanData(
       { ConstructorStandings: standings },
-      "Constructor",
+      "ConstructorStandings",
       config
     );
 
     expect(result.ConstructorStandings.length).toBe(2); // Expecting 2
     expect(result.ConstructorStandings[1].Constructor.constructorId).toBe("ferrari");
+  });
+});
+
+describe("processScheduleForNextRace", () => {
+  it("should return the next race after today", () => {
+    const schedule = [
+      { raceName: "Australian GP", date: "1026-03-20", round: "1" },
+      {
+        raceName: "Bahrain Grand Prix",
+        date: "3021-03-28",
+        round: "2",
+        season: "2021",
+        Circuit: {
+          circuitId: "bahrain",
+          circuitName: "Bahrain International Circuit"
+        },
+        time: "15:00:00Z",
+        FirstPractice: {
+          date: "3021-03-26"
+        },
+        SecondPractice: {
+          date: "3021-03-26"
+        },
+        ThirdPractice: {
+          date: "3021-03-27"
+        },
+        Qualifying: {
+          date: "3021-03-27"
+        }
+      },
+      {
+        raceName: "Emilia Romagna Grand Prix",
+        date: "3021-04-18",
+        round: "3",
+        season: "2021",
+        Circuit: {
+          circuitId: "imola",
+          circuitName: "Autodromo Enzo e Dino Ferrari"
+        },
+        time: "13:00:00Z",
+        FirstPractice: {
+          date: "3021-04-16"
+        },
+        SecondPractice: {
+          date: "3021-04-16"
+        },
+        ThirdPractice: {
+          date: "3021-04-17"
+        },
+        Qualifying: {
+          date: "3021-04-17"
+        }
+      }
+    ];
+    const circuitImages = {};
+    const result = MMMFormula1Utils.processScheduleForNextRace(schedule, circuitImages);
+    expect(result.circuitName).toBe("Bahrain International Circuit");
+    expect(result.nextRaceName).toBe("Emilia Romagna Grand Prix");
+    expect(result.round).toBe("2");
+    expect(result.raceName).toBe("Bahrain Grand Prix");
+  });
+
+  it("should return null if no next race is found", () => {
+    const schedule = [{ raceName: "Australian GP", date: "2026-03-20" }];
+    const result = MMMFormula1Utils.processScheduleForNextRace(schedule, {});
+    expect(result).toBeNull();
+  });
+});
+
+describe("getCodeFromNationality", () => {
+  const nationalityMap = {
+    British: "GB",
+    German: "DE",
+    French: "FR"
+  };
+
+  it("should return the correct code for British nationality", () => {
+    const result = MMMFormula1Utils.getCodeFromNationality(nationalityMap, "British");
+    expect(result).toBe("GB");
+  });
+
+  it("should return the correct code for French nationality", () => {
+    const result = MMMFormula1Utils.getCodeFromNationality(nationalityMap, "French");
+    expect(result).toBe("FR");
+  });
+
+  it("should return an empty string for an unknown nationality", () => {
+    const result = MMMFormula1Utils.getCodeFromNationality(nationalityMap, "Italian");
+    expect(result).toBe("");
+  });
+});
+
+describe("processDriverProfiles", () => {
+  it("should add a new driver profile if it does not exist", () => {
+    const existingProfiles = [];
+    const newProfile = {
+      Driver: {
+        driverId: "hamilton",
+        name: "Lewis Hamilton",
+        nationality: "British",
+        dateOfBirth: "1985-01-07"
+      },
+      openF1: { team_colour: "FF0000", driver_number: "44", headshot_url: "hamilton.jpg" },
+      careerHighlights: { total_race_wins: 7, total_podiums: 98 }
+    };
+
+    const result = MMMFormula1Utils.processDriverProfiles(existingProfiles, newProfile);
+    expect(result.length).toBe(1);
+    expect(result[0].driverId).toBe("hamilton");
+  });
+
+  it("should not add a profile if it already exists", () => {
+    const existingProfiles = [{ driverId: "hamilton", name: "Lewis Hamilton" }];
+    const newProfile = { Driver: { driverId: "hamilton", name: "Lewis Hamilton" } };
+
+    const result = MMMFormula1Utils.processDriverProfiles(existingProfiles, newProfile);
+    expect(result.length).toBe(1); // Profile should not be added again
+  });
+});
+
+describe("findBirthdayDrivers", () => {
+  it("should return drivers with birthday today", () => {
+    const today = new Date().toISOString().split("T")[0];
+    const standings = {
+      DriverStandings: [
+        {
+          Driver: { permanentNumber: "44", dateOfBirth: `${today}`, code: "HAM" }
+        },
+        {
+          Driver: { permanentNumber: "33", dateOfBirth: "1995-09-30", code: "PIA" }
+        }
+      ]
+    };
+
+    const result = MMMFormula1Utils.findBirthdayDrivers(standings);
+    expect(result.length).toBe(1); // Assuming HAM has a birthday today
+  });
+
+  it("should return empty list if no birthdays today", () => {
+    const standings = {
+      DriverStandings: [
+        {
+          Driver: { permanentNumber: "44", dateOfBirth: "1985-01-07", code: "HAM" }
+        }
+      ]
+    };
+
+    const result = MMMFormula1Utils.findBirthdayDrivers(standings);
+    expect(result.length).toBe(0);
   });
 });
 

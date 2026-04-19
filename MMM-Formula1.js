@@ -9,60 +9,33 @@
 Module.register("MMM-Formula1", {
   // Default module configuration options.
   defaults: {
-    season: "current", // Default season is "current"
-    maxRowsDriver: 5, // Max number of driver standings to show
-    maxRowsConstructor: 5, // Max number of constructor standings to show
     showStanding: "MIX", // Default display type (MIX: drivers and constructors)
-    loadDriver: true, // Load driver data if required by showStanding config
-    loadConstructor: false, // Load constructor data if required by showStanding config
+    loadDriverStandings: true, // Load driver standings data if required by showStanding config
+    loadConstructorStandings: false, // Load constructor standings data if required by showStanding config
+    showDriverProfiles: true, // Load driver profile  data
     showSchedule: true, // Show the race schedule
     fade: false, // Apply fade effect in standings list
     fadePoint: 0.3, // Fade effect starts at this point in the standings list
     reloadInterval: 30 * 60 * 1000, // Interval to reload data (30 minutes)
-    screenRefreshInterval: 30 * 1000, // Interval to refresh the screen (30 seconds)
+    screenRefreshInterval: 150 * 1000, // Interval to refresh the screen (30 seconds)
     animationSpeed: 2.5 * 1000, // Animation speed (2.5 seconds)
     grayscale: false, // Enable grayscale for flag colors
     showNextRace: true // Show the next race when displaying the schedule
   },
 
   // Store data for driver, constructor, and schedule in local variables.
-  dataDriver: null,
-  dataConstructor: null,
+  dataDriverStandings: null,
+  dataConstructorStandings: null,
+  slicedDriverStandings: null,
+  slicedConstructorStandings: null,
   dataSchedule: null,
+  dataDriverProfiles: [],
   endpoint: "/modules/MMM-Formula1/", // Base endpoint for API calls
-  driverErrorCount: 0, // Track missing data for drivers
-  constructorErrorCount: 0, // Track missing data for constructors
+  driverStandingsErrorCount: 0, // Track missing data for driver standings
+  constructorStandingsErrorCount: 0, // Track missing data for constructor standings
   scheduleErrorCount: 0, // Track missing data for schedule
+  driverProfilesErrorCount: 0, // Track missing data for driver profiless
   loading: true, // Loading state for the module
-
-  // Circuit images for each Grand Prix location.
-  circuitImages: {
-    bahrain: "/bahrain.svg",
-    jeddah: "/jeddah.svg",
-    albert_park: "/australia.svg",
-    suzuka: "/japan.svg",
-    shanghai: "/china.svg",
-    miami: "/miami.svg",
-    imola: "/imola.svg",
-    monaco: "/monaco.svg",
-    villeneuve: "/canada.svg",
-    catalunya: "/spain.svg",
-    red_bull_ring: "/austria.svg",
-    silverstone: "/greatbritain.svg",
-    hungaroring: "/hungary.svg",
-    spa: "/belgium.svg",
-    zandvoort: "/netherlands.svg",
-    monza: "/italy.svg",
-    baku: "/azerbaijan.svg",
-    marina_bay: "/singapore.svg",
-    americas: "/usa.svg",
-    rodriguez: "/mexico.svg",
-    interlagos: "/brazil.svg",
-    vegas: "/vegas.svg",
-    losail: "/qatar.svg",
-    madring: "/madring.svg",
-    yas_marina: "/abudhabi.svg"
-  },
 
   // Get the external script(s) needed for the module.
   getScripts() {
@@ -118,18 +91,23 @@ Module.register("MMM-Formula1", {
     }
   },
   // Handle socket notifications (received from the MagicMirror server).
-
   socketNotificationReceived(notification, payload) {
     Log.info(`${this.name} received a notification: ${notification}`);
 
     // Data processors mapped to each notification type
     const dataProcessors = {
-      DRIVER: this.processDriverData,
-      CONSTRUCTOR: this.processConstructorData,
+      DRIVERSTANDINGS: this.processDriverStandingsData,
+      CONSTRUCTORSTANDINGS: this.processConstructorStandingsData,
       SCHEDULE: this.processScheduleData,
-      DRIVER_ERROR: () => this.increaseErrorCount("driver"),
-      CONSTRUCTOR_ERROR: () => this.increaseErrorCount("constructor"),
-      SCHEDULE_ERROR: () => this.increaseErrorCount("schedule")
+      DRIVER_PROFILE: this.processDriverProfileData,
+      DRIVERSTANDINGS_ERROR: () => this.increaseErrorCount("driverStandings"),
+      CONSTRUCTORSTANDINGS_ERROR: () => this.increaseErrorCount("constructorStandings"),
+      SCHEDULE_ERROR: () => this.increaseErrorCount("schedule"),
+      DRIVERPROFILES_ERROR: () => this.increaseErrorCount("driverProfiles"),
+      SEASON_DRIVERS_ERROR: () =>
+        Log.error(
+          `${this.name}: Failed to load driver list, birthday card data impaired: ${payload}`
+        )
     };
 
     // Check if the notification exists in the dataProcessors map and call the corresponding function
@@ -144,37 +122,64 @@ Module.register("MMM-Formula1", {
     this.updateDom(this.config.animationSpeed);
   },
 
-  // Process the driver data and reset error count
-  processDriverData(payload) {
-    this.dataDriver = MMMFormula1Utils.processStandingsWithFanData(payload, "Driver", this.config);
-    this.driverErrorCount = 0; // Reset error count
-  },
+  /***           process Handlers               ***/
 
-  // Process the constructor data and reset error count
-  processConstructorData(payload) {
-    this.dataConstructor = MMMFormula1Utils.processStandingsWithFanData(
+  // Process the driver standings data and reset error count
+  processDriverStandingsData(payload) {
+    this.dataDriverStandings = payload;
+    this.slicedDriverStandings = MMMFormula1Utils.processStandingsWithFanData(
       payload,
-      "Constructor",
+      "DriverStandings",
       this.config
     );
-    this.constructorErrorCount = 0; // Reset error count
+
+    // check if somebody has a birthday
+    this.dataDriverProfiles = []; // reset the Card array - prevents from dragging birthdays to the next day
+    const birthdayDriverStandings = MMMFormula1Utils.findBirthdayDrivers(this.dataDriverStandings);
+    if (birthdayDriverStandings.length > 0) {
+      // todo iterate
+      birthdayDriverStandings.forEach((driverStanding) => {
+        this.sendSocketNotification("DRIVER_PROFILE", driverStanding);
+      });
+    }
+    this.driverStandingsErrorCount = 0; // Reset error count
+  },
+
+  // Process the constructor standings data and reset error count
+  processConstructorStandingsData(payload) {
+    this.dataConstructorStandings = payload;
+    this.slicedConstructorStandings = MMMFormula1Utils.processStandingsWithFanData(
+      payload,
+      "ConstructorStandings",
+      this.config
+    );
+    this.constructorStandingsErrorCount = 0; // Reset error count
   },
 
   // Process the schedule data and reset error count
   processScheduleData(payload) {
     this.dataSchedule = MMMFormula1Utils.processScheduleForNextRace(
       payload,
-      this.circuitImages,
       config.locale,
       config.timeFormat
     );
     this.scheduleErrorCount = 0; // Reset error count
   },
+  // Process the driver profile data and reset error count
+  processDriverProfileData(newDriverProfile) {
+    this.dataDriverProfiles = MMMFormula1Utils.processDriverProfiles(
+      this.dataDriverProfiles,
+      newDriverProfile
+    );
+    this.driverProfileErrorCount = 0; // Reset error count
+  },
+
   // Dynamically access the error count property based on the type
   increaseErrorCount(type) {
     const errorCountProperty = `${type}ErrorCount`;
     this[errorCountProperty]++;
   },
+
   // Define the template file used for rendering the module.
   getTemplate() {
     return "templates\\mmm-formula1-standings.njk"; // Use the Nunjucks template for standings
@@ -184,24 +189,31 @@ Module.register("MMM-Formula1", {
   getHeader() {
     return (
       this.data.header +
-      (this.driverErrorCount > 0 ? " (D:" + this.driverErrorCount + ")" : "") + // Show driver data error count
-      (this.constructorErrorCount > 0 ? " (C:" + this.constructorErrorCount + ")" : "") + // Show constructor data error count
+      (this.driverStandingsErrorCount > 0 ? " (D:" + this.driverStandingsErrorCount + ")" : "") + // Show driver data error count
+      (this.constructorStandingsErrorCount > 0
+        ? " (C:" + this.constructorStandingsErrorCount + ")"
+        : "") + // Show constructor data error count
+      (this.driverProfileErrorCount > 0 ? " (P:" + this.driverProfileErrorCount + ")" : "") + // Show profile data error count
       (this.scheduleErrorCount > 0 ? " (S:" + this.scheduleErrorCount + ")" : "") // Show schedule data error count
     );
   },
 
   // Prepare the template data to be passed to Nunjucks.
   getTemplateData() {
+    const hasBirthday = !!(this.dataDriverProfiles && this.dataDriverProfiles.length);
+
     const templateData = {
       loading: this.loading, // Whether the module is still loading data
       config: this.config, // Current module configuration
-      dataD: this.dataDriver, // Driver standings data
-      dataC: this.dataConstructor, // Constructor standings data
+      dataDriverProfiles: this.dataDriverProfiles,
+      hasBirthday: hasBirthday,
+      dataD: this.slicedDriverStandings, // Driver standings data
+      dataC: this.slicedConstructorStandings, // Constructor standings data
       dataS: this.dataSchedule, // Schedule data
-      endpointconstructors: this.endpoint + "/constructors/", // Endpoint for constructor data
+      endpointconstructors: this.endpoint + "constructors/", // Endpoint for constructor data
       endpointtracks: this.endpoint + (this.config.grayscale ? "tracks" : "trackss"), // Endpoint for track data
-      identifier: this.identifier, // Unique identifier for the module
-      timeStamp: this.dataRefreshTimeStamp // Last data refresh timestamp
+      identifier: this.identifier // Unique identifier for the module
+      //timeStamp: this.dataRefreshTimeStamp // Last data refresh timestamp
     };
     return templateData;
   },
@@ -217,13 +229,23 @@ Module.register("MMM-Formula1", {
     }
 
     // Set flags for loading driver and constructor data based on showStanding config
-    this.config.loadDriver = ["DRIVER", "BOTH", "MIX"].includes(configType);
-    this.config.loadConstructor = ["CONSTRUCTOR", "BOTH", "MIX"].includes(configType);
+    this.config.loadDriverStandings = ["DRIVER", "BOTH", "MIX"].includes(configType);
+    this.config.loadConstructorStandings = ["CONSTRUCTOR", "BOTH", "MIX"].includes(configType);
 
     // Ensure there is something to show if no data is configured to be displayed
-    if (!this.config.showSchedule && !this.config.loadDriver && !this.config.loadConstructor) {
+    if (
+      !this.config.showSchedule &&
+      !this.config.loadDriverStandings &&
+      !this.config.loadConstructorStandings
+    ) {
       this.config.showSchedule = true; // Default to showing schedule if nothing else is enabled
     }
+
+    // deprecation check
+    if (this.config.season)
+      Log.warn(
+        `Starting module: ${this.name}.config.season: config option is deprecated and no longer used`
+      );
   },
 
   // Add custom Nunjucks filters to the template engine.
@@ -237,7 +259,6 @@ Module.register("MMM-Formula1", {
       MMMFormula1Utils.shouldShowStanding(
         this.config.showStanding.toUpperCase(),
         showType,
-        //moment().second()
         new Date().getSeconds()
       )
     );

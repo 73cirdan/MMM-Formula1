@@ -6,72 +6,54 @@
  * MIT Licensed.
  */
 
+// node_helper.js
+
 const Log = require("logger"); // Importing a logger module for logging purposes
 const NodeHelper = require("node_helper"); // Importing the NodeHelper class to manage the module lifecycle
-const { fetchF1Data } = require("./api"); // Importing the fetchF1Data function from the api.js file
+const { fetchDriverProfile } = require("./openF1Api"); // Import the openF1Data methods
+const { fetchSeasonData, fetchSchedule } = require("./jolpiApi"); // Import the Jolpi API methods
+const { fetchSeasonDrivers, fetchDriverCareerHighlights } = require("./racingHubApi"); // Import the RacingHub API method
 
-// The main NodeHelper object that manages fetching data from the API and sending it to the frontend
 module.exports = NodeHelper.create({
-  /**
-   * The start function is executed when the module is started.
-   * It initializes the configuration.
-   */
   start() {
     Log.log(`Starting module: ${this.name}`); // Log that the module is starting
     this.config = {}; // Initialize an empty config object
+    this.racingHubSeasonDriversData = null;
   },
 
-  /**
-   * This function handles the reception of socket notifications.
-   * When the "CONFIG" notification is received, it stores the payload in the config.
-   * It also restarts polling by calling restartPolling().
-   *
-   * @param {string} notification - The name of the notification received.
-   * @param {any} payload - The payload data sent with the notification.
-   */
   socketNotificationReceived(notification, payload) {
     if (notification === "CONFIG") {
       this.config = payload; // Store the received configuration in the config object
+      this.season = new Date().getFullYear();
+      this.loadRacinghubSeasonDrivers();
       this.restartPolling(); // Restart polling with the new configuration
+    }
+
+    if (notification === "DRIVER_PROFILE") {
+      this.fetchDriverProfile(payload); // payload is the driver permanent number for this season
     }
   },
 
-  /**
-   * This function is responsible for stopping any existing polling and starting fresh polling.
-   * It clears any previous timeouts and triggers the fetchApiData() function to fetch new data.
-   */
   restartPolling() {
     if (this.timerId) clearTimeout(this.timerId); // Clear any previous timeout
     this.fetchApiData(); // Start fetching new data
   },
 
-  /**
-   * This function fetches the F1 data based on the current configuration.
-   * It builds the appropriate API URLs for driver standings, constructor standings, and schedule.
-   * It then makes multiple requests in parallel to the API.
-   * The results of the requests are sent to the frontend using socket notifications.
-   */
   async fetchApiData() {
-    // Determine the season based on the configuration (use current year if "current" is selected)
-    const season = this.config.season === "current" ? new Date().getFullYear() : this.config.season;
-
-    // Build the base URL for the API
-    const baseUrl = `https://api.jolpi.ca/ergast/f1/${season}`;
-
     // Array to hold all the fetch requests
     const requests = [];
 
-    // Push the respective requests based on the configuration
-    if (this.config.loadDriver) {
-      requests.push(this.handleRequest("DRIVER", `${baseUrl}/driverStandings.json`));
+    if (this.config.loadDriverStandings) {
+      requests.push(this.fetchStandings("driver"));
     }
 
-    if (this.config.loadConstructor) {
-      requests.push(this.handleRequest("CONSTRUCTOR", `${baseUrl}/constructorStandings.json`));
+    if (this.config.loadConstructorStandings) {
+      requests.push(this.fetchStandings("constructor"));
     }
 
+    // Fetch the schedule if needed
     if (this.config.showSchedule) {
-      requests.push(this.handleRequest("SCHEDULE", `${baseUrl}.json`));
+      requests.push(this.fetchScheduleData(this.season)); // Fetch the schedule data
     }
 
     // Wait for all requests to complete
@@ -81,28 +63,87 @@ module.exports = NodeHelper.create({
     this.timerId = setTimeout(() => this.fetchApiData(), this.config.reloadInterval);
   },
 
-  /**
-   * This function handles the individual fetch request for a specific type of data.
-   * It fetches the data from the API and then sends the result to the frontend.
-   * If there is an error, it sends an error notification instead.
-   *
-   * @param {string} type - The type of data being fetched (e.g., "DRIVER", "CONSTRUCTOR", "SCHEDULE").
-   * @param {string} url - The URL to fetch the data from.
-   */
-  async handleRequest(type, url) {
-    Log.log(`${this.name} fetching ${type}: ${url}`); // Log the type of data being fetched and the URL
+  // fetch standings from jolpi
+  async fetchStandings(type) {
+    const result = await fetchSeasonData(type, this.season);
 
-    // Fetch the data using the fetchF1Data function
-    const result = await fetchF1Data(type, url);
-
-    // If there was an error in the result, log it and send an error notification
-    if (result.error) {
-      Log.error(`${this.name} ${type} error:`, result.error);
-      this.sendSocketNotification(`${type}_ERROR`, result.error); // Send the error to the frontend
+    if (!result) {
+      this.handleError(`${type.toUpperCase()}STANDINGS_ERROR`, "Failed to fetch standings");
       return;
     }
 
-    // If the fetch was successful, send the fetched data to the frontend
-    this.sendSocketNotification(type, result.data);
+    this.sendSocketNotification(`${type.toUpperCase()}STANDINGS`, result);
+  },
+  // fetch schedule from jolpi
+  async fetchScheduleData(season) {
+    try {
+      const scheduleData = await fetchSchedule(season); // Call Jolpi API for schedule
+      if (scheduleData) {
+        this.sendSocketNotification("SCHEDULE", scheduleData); // Send the schedule data to the frontend
+      } else {
+        this.handleError("SCHEDULE_ERROR", "Failed to fetch schedule");
+      }
+    } catch (error) {
+      this.handleError("SCHEDULE_ERROR", error);
+    }
+  },
+  // fetch driver profile data from open F1 api and racinghub hub api
+  async fetchDriverProfile(driverStanding) {
+    const driverId_F1 = driverStanding.Driver.permanentNumber;
+    this.loadRacinghubSeasonDrivers(); // for resilience
+
+    try {
+      // Fetch driver image from OpenF1
+      const openF1Data = await fetchDriverProfile(driverId_F1);
+
+      // Get RacingHub driver ID
+      var driverId_RH = this.getDriverId_RH(driverId_F1);
+
+      // Create the backup driver ID using underscore between first and last name
+      if (!driverId_RH && openF1Data) {
+        driverId_RH = `{openF1Data.first_name.toLowerCase()}_{openF1Data.last_name.toLowerCase()}`;
+      }
+
+      // Fetch career highlights from RacingHub
+      const careerHighlights = await fetchDriverCareerHighlights(driverId_RH);
+
+      // Combine driver profile data
+      const profileData = {
+        careerHighlights,
+        openF1: openF1Data, // Driver's image
+        ...driverStanding // Include other driver data like name, nationality, etc.
+      };
+
+      // Send the combined driver profile data to the frontend
+      this.sendSocketNotification("DRIVER_PROFILE", profileData);
+    } catch (error) {
+      this.handleError("DRIVER_PROFILE_ERROR", error);
+    }
+  },
+
+  async loadRacinghubSeasonDrivers() {
+    if (this.racingHubSeasonDriversData) return;
+
+    try {
+      const driversData = await fetchSeasonDrivers(this.season); // Fetch drivers using RacingHub API
+      if (driversData) {
+        this.racingHubSeasonDriversData = driversData;
+      } else {
+        this.handleError(`SEASON_DRIVERS_ERROR`, "Failed to fetch RacingHub season drivers");
+      }
+    } catch (error) {
+      this.handleError(`SEASON_DRIVERS_ERROR`, error);
+    }
+  },
+
+  getDriverId_RH(number) {
+    if (!this.racingHubSeasonDriversData) return null;
+    const driver = this.racingHubSeasonDriversData.find((d) => String(d.number) === String(number));
+    return driver ? driver.id : null;
+  },
+
+  handleError(type, error) {
+    Log.error(`${this.name} ${type} error:`, error);
+    this.sendSocketNotification(type, error);
   }
 });

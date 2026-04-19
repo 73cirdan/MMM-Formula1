@@ -16,6 +16,81 @@
   display: block;
 }
 
+/* General card container */
+.f1-birthday-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Grid Areas for f1-card */
+.f1-card {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+  grid-column-gap: 0px;
+  grid-row-gap: 0px;
+  //background: rgba(255, 255, 255, 0);
+  border-radius: 12px;
+  padding: 0px 5px;
+}
+
+/* Top row: Driver details */
+.f1-name {
+  grid-area: 1 / 1 / 2 / 5;
+  font-size: 16px;
+}
+
+.f1-avatar {
+  justify-content: center; /* Center the image horizontally */
+  align-items: center;
+  grid-area: 2 / 1 / 6 / 3;
+  height: 100px;
+  width: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.f1-team {
+  grid-area: 2 / 3 / 3 / 5;
+  font-size: 14px;
+}
+
+/* Stats section */
+.f1-stats {
+  grid-area: 3 / 3 / 4 / 5;
+  font-size: 14px;
+}
+
+.f1-constructorlogo {
+  grid-area: 2 / 5 / 4 / 6;
+  align-self: start;
+  justify-self: center;
+}
+.f1-flaglogo {
+  grid-area: 1 / 5 / 2 / 6;
+  justify-self: center;
+}
+
+.f1-career {
+  grid-area: 4 / 3 / 5 / 6;
+  font-size: 16px; /* Increased font size */
+}
+
+.f1-highlights1 {
+  font-size: 14px;
+  grid-area: 5 / 3 / 6 / 6;
+}
+
+.f1-highlights2 {
+  font-size: 14px;
+  grid-area: 6 / 1 / 7 / 6;
+}
+
+.f1-highlights3 {
+  font-size: 14px;
+  grid-area: 7 / 1 / 8 / 6;
+}
+
 /* Flag Sprites - https://www.flag-sprites.com/en_US/ */
 
 .MMM-Formula1 .grayscale {
