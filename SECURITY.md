@@ -11,4 +11,5 @@ currently being supported with security updates.
 | 3.0.x   | :x:                |
 
 ## Reporting a Vulnerability
+
 Report a issue or send a mail to my user at gmail
