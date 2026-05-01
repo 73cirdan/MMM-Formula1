@@ -27,11 +27,9 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(7, 1fr);
-  grid-column-gap: 0px;
-  grid-row-gap: 0px;
-  //background: rgba(255, 255, 255, 0);
+  gap: 0;
   border-radius: 12px;
-  padding: 0px 5px;
+  padding: 0 5px;
 }
 
 /* Top row: Driver details */
@@ -63,9 +61,9 @@
 
 .f1-constructorlogo {
   grid-area: 2 / 5 / 4 / 6;
-  align-self: start;
-  justify-self: center;
+  place-self: start center;
 }
+
 .f1-flaglogo {
   grid-area: 1 / 5 / 2 / 6;
   justify-self: center;

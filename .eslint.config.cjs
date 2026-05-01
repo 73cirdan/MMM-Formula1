@@ -5,7 +5,7 @@ const globals = require("globals");
 module.exports = [
   // 🌐 Frontend (MagicMirror module)
   {
-    files: ["MMM-Formula1.js", "MMM-Formula1-utils.js" ],
+    files: ["MMM-Formula1.js", "MMM-Formula1-utils.js"],
 
     languageOptions: {
       ecmaVersion: "latest",
@@ -22,7 +22,7 @@ module.exports = [
 
         // Browser globals
         ...globals.browser,
-        ...globals.node,
+        ...globals.node
       }
     },
 
@@ -31,8 +31,8 @@ module.exports = [
     rules: {
       eqeqeq: "error",
       "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-      "no-undef": "error",
-    },
+      "no-undef": "error"
+    }
   },
 
   // 🖥️ Node helper
@@ -44,7 +44,7 @@ module.exports = [
       sourceType: "script",
 
       globals: {
-        ...globals.node,
+        ...globals.node
       }
     },
 
@@ -53,10 +53,10 @@ module.exports = [
     rules: {
       eqeqeq: "error",
       "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-      "no-undef": "error",
-    },
+      "no-undef": "error"
+    }
   },
 
   // 🎨 Prettier (always last)
-  prettier,
+  prettier
 ];
