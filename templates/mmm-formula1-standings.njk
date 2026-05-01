@@ -161,7 +161,7 @@
 {% endif %} <!-- showSchedule -->
 
 {% if hasBirthday %}
-  <div class="f1-birthday-container">
+  <div class="small f1-birthday-container">
     {% for driver in dataDriverProfiles %}
       <div class="f1-card" style="border-left: 5px solid {% if config.grayscale %}#FFFFFF{% else %}{{ driver.team_colour }}{% endif %};">
 
@@ -178,42 +178,42 @@
           </div>
 
         <!-- Avatar section -->
-  <img class="f1-avatar {% if config.grayscale %}grayscale{% endif %}" 
-       style="border: 3px solid {% if config.grayscale %}#FFFFFF{% else %}{{ driver.team_colour }}{% endif %};"
-{% if driver.image %}
-       src="{{ driver.image }}"
-{% endif %}
- />
+             <img class="f1-avatar {% if config.grayscale %}grayscale{% endif %}" 
+                  style="border: 3px solid {% if config.grayscale %}#FFFFFF{% else %}{{ driver.team_colour }}{% endif %};"
+                  {% if driver.image %}
+                        src="{{ driver.image }}"
+                  {% endif %}
+            />
 
         <!-- Constructor section -->
-          <div class="f1-team">
+          <div class="xsmall f1-team">
             {{ driver.team }} 
           </div>
           <div class="f1-constructorlogo">
               <img class="{{ "grayscale" if config.grayscale }}" src="{{ endpointconstructors }}{{ driver.team_id }}.png" height="50">
           </div>
         <!-- Stats section -->
-        <div class="f1-stats">
+        <div class="xsmall f1-stats">
           <span>{{ driver.year }} {% if driver.position != "-" %}P{{ driver.position }}{% else %}—{% endif %} {{ driver.points }} pts</span>
         </div>
 
         <!-- Career title section -->
-        <div class="f1-career bright" style="border-bottom: 1px solid {% if config.grayscale %}#FFFFFF{% else %}{{ driver.team_colour }}{% endif %};"> 
+        <div class="f1-career title bright" style="border-bottom: 1px solid {% if config.grayscale %}#FFFFFF{% else %}{{ driver.team_colour }}{% endif %};"> 
  		{{ "CAREER_HIGHLIGHTS" |  translate }}
         </div>
 
         <!-- Career Facts -->
-        <div class="f1-highlights1">
+        <div class=" xsmall f1-highlights1">
 	    <div><b>{{ "CHAMPIONSHIP" | translate }}:</b> {{ driver.total_championship_wins }} <i class="fa fa-trophy"></i> | 
             <i class="fa-solid fa-arrow-up-1-9"></i> P{{ driver.best_championship_position }} </div>
         </div>
-        <div class="f1-highlights2">
+        <div class="xsmall f1-highlights2">
             <div> <b>{{ "RACE" | translate }}</b> #:{{ driver.total_race_entries }} | 
               {{ driver.total_podiums }} <i class="fa fa-ranking-star"></i> | 
               {{ driver.total_race_wins }}  <i class="fa fa-trophy"></i> | 
  	      <i class="fa-solid fa-arrow-up-1-9"></i> P{{ driver.best_race_result }} </div>
         </div>
-        <div class="f1-highlights3">
+        <div class=" xsmall f1-highlights3">
 	    <div>#{{ "FASTEST_LAP" | translate }}: {{ driver.total_fastest_laps }} | #{{ "DRIVER_OT_DAY" | translate }}: {{ driver.total_driver_of_the_day }}</div>
         </div>
         

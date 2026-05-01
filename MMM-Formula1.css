@@ -35,7 +35,6 @@
 /* Top row: Driver details */
 .f1-name {
   grid-area: 1 / 1 / 2 / 5;
-  font-size: 16px;
 }
 
 .f1-avatar {
@@ -50,13 +49,11 @@
 
 .f1-team {
   grid-area: 2 / 3 / 3 / 5;
-  font-size: 14px;
 }
 
 /* Stats section */
 .f1-stats {
   grid-area: 3 / 3 / 4 / 5;
-  font-size: 14px;
 }
 
 .f1-constructorlogo {
@@ -71,21 +68,17 @@
 
 .f1-career {
   grid-area: 4 / 3 / 5 / 6;
-  font-size: 16px; /* Increased font size */
 }
 
 .f1-highlights1 {
-  font-size: 14px;
   grid-area: 5 / 3 / 6 / 6;
 }
 
 .f1-highlights2 {
-  font-size: 14px;
   grid-area: 6 / 1 / 7 / 6;
 }
 
 .f1-highlights3 {
-  font-size: 14px;
   grid-area: 7 / 1 / 8 / 6;
 }
 
