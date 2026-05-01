@@ -37,7 +37,7 @@ module.exports = [
 
   // 🖥️ Node helper
   {
-    files: ["node_helper.js"],
+    files: ["node_helper.js", "api.js", "**/*Api.js"],
 
     languageOptions: {
       ecmaVersion: "latest",
