@@ -9,11 +9,11 @@
     "test:coverage": "vitest run --coverage",
     "test:prettier": "prettier --check **/*.{js,css,json,md,yml}",
     "test:js": "eslint *.js --config .eslint.config.cjs --quiet",
-    "test:css": "stylelint **/*.css --config .stylelintrc.json",
+    "test:css": "stylelint \"**/*.css\" --config .stylelintrc.json",
     "lint": "npm run lint:js && npm run lint:css && npm run lint:prettier",
     "lint:prettier": "prettier --write **/*.{js,css,json,md,yml}",
     "lint:js": "eslint *.js --config .eslint.config.cjs --fix",
-    "lint:css": "stylelint **/*.css --config .stylelintrc.json --fix"
+    "lint:css": "stylelint \"**/*.css\" --config .stylelintrc.json --fix"
   },
   "repository": {
     "type": "git",

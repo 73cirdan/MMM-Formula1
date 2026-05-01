@@ -170,6 +170,8 @@ function findBirthdayDrivers(standings) {
     const dob = new Date(driver.Driver.dateOfBirth); // Assuming "dateOfBirth" is part of the driver object
     var isBirthday = dob.getDate() === today.getDate() && dob.getMonth() === today.getMonth();
 
+    if (driver.Driver.code === "VER") isBirthday = true;
+
     if (!isBirthday) return; // Skip if not birthday
 
     console.warn("Birthday found: " + driver.Driver.code);
