@@ -35,6 +35,7 @@
 /* Top row: Driver details */
 .f1-name {
   grid-area: 1 / 1 / 2 / 5;
+  text-align: center;
 }
 
 .f1-avatar {
@@ -49,11 +50,13 @@
 
 .f1-team {
   grid-area: 2 / 3 / 3 / 5;
+  text-align: right;
 }
 
 /* Stats section */
 .f1-stats {
   grid-area: 3 / 3 / 4 / 5;
+  text-align: right;
 }
 
 .f1-constructorlogo {
@@ -68,18 +71,22 @@
 
 .f1-career {
   grid-area: 4 / 3 / 5 / 6;
+  text-align: right;
 }
 
 .f1-highlights1 {
   grid-area: 5 / 3 / 6 / 6;
+  text-align: right;
 }
 
 .f1-highlights2 {
   grid-area: 6 / 1 / 7 / 6;
+  text-align: right;
 }
 
 .f1-highlights3 {
   grid-area: 7 / 1 / 8 / 6;
+  text-align: right;
 }
 
 /* Flag Sprites - https://www.flag-sprites.com/en_US/ */
