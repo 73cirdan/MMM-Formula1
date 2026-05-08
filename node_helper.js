@@ -19,6 +19,7 @@ module.exports = NodeHelper.create({
     Log.log(`Starting module: ${this.name}`); // Log that the module is starting
     this.config = {}; // Initialize an empty config object
     this.racingHubSeasonDriversData = null;
+    this.cachedProfiles = {};
   },
 
   socketNotificationReceived(notification, payload) {
@@ -95,6 +96,8 @@ module.exports = NodeHelper.create({
     try {
       // Fetch driver image from OpenF1
       const openF1Data = await fetchDriverProfile(driverId_F1);
+      const isValidOpenF1 = openF1Data && openF1Data.headshot_url && openF1Data.team_colour;
+      const existingF1Data = this.cachedProfiles?.[driverId_F1];
 
       // Get RacingHub driver ID
       var driverId_RH = this.getDriverId_RH(driverId_F1);
@@ -106,14 +109,18 @@ module.exports = NodeHelper.create({
 
       // Fetch career highlights from RacingHub
       const careerHighlights = await fetchDriverCareerHighlights(driverId_RH);
+      const isValidRH = careerHighlights && careerHighlights.total_race_wins !== null;
+      const existingRHData = this.cachedProfiles?.[driverId_F1];
 
       // Combine driver profile data
       const profileData = {
-        careerHighlights,
-        openF1: openF1Data, // Driver's image
+        careerHighlights: isValidRH ? careerHighlights : existingRHData?.careerHighlights || null,
+        openF1: isValidOpenF1 ? openF1Data : existingF1Data?.openF1 || null,
         timestamp: new Date(),
         ...driverStanding // Include other driver data like name, nationality, etc.
       };
+
+      this.cachedProfiles[driverId_F1] = profileData;
 
       // Send the combined driver profile data to the frontend
       this.sendSocketNotification("DRIVER_PROFILE", profileData);

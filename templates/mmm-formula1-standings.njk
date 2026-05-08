@@ -1,5 +1,3 @@
-<div> {{ birthdays | dump }} </div>
-
 {% if loading %}
   <div class="small dimmed light">
     {{ "LOADING" | translate | safe }}
@@ -160,9 +158,9 @@
     {% endif %} <!-- show next race -->
 {% endif %} <!-- showSchedule -->
 
-{% if hasBirthday %}
-  <div class="small f1-birthday-container">
-    {% for driver in dataDriverProfiles %}
+<div class="small f1-birthday-container">
+  {% for driver in dataDriverProfiles %}
+    {% if driver.dob | isToday %}
       <div class="f1-card" style="border-left: 5px solid {% if config.grayscale %}#FFFFFF{% else %}{{ driver.team_colour }}{% endif %};">
 
         
@@ -186,14 +184,14 @@
             />
 
         <!-- Constructor section -->
-          <div class="xsmall f1-team">
+          <div class="small f1-team">
             {{ driver.team }} 
           </div>
           <div class="f1-constructorlogo">
               <img class="{{ "grayscale" if config.grayscale }}" src="{{ endpointconstructors }}{{ driver.team_id }}.png" height="50">
           </div>
         <!-- Stats section -->
-        <div class="xsmall f1-stats">
+        <div class="small f1-stats">
           <span>{{ driver.year }} {% if driver.position != "-" %}P{{ driver.position }}{% else %}—{% endif %} {{ driver.points }} pts</span>
         </div>
 
@@ -203,31 +201,21 @@
         </div>
 
         <!-- Career Facts -->
-        <div class=" xsmall f1-highlights1">
+        <div class=" small f1-highlights1">
 	    <div><b>{{ "CHAMPIONSHIP" | translate }}:</b> {{ driver.total_championship_wins }} <i class="fa fa-trophy"></i> | 
             <i class="fa-solid fa-arrow-up-1-9"></i> P{{ driver.best_championship_position }} </div>
         </div>
-        <div class="xsmall f1-highlights2">
+        <div class="small f1-highlights2">
             <div> <b>{{ "RACE" | translate }}</b> #:{{ driver.total_race_entries }} | 
               {{ driver.total_podiums }} <i class="fa fa-ranking-star"></i> | 
               {{ driver.total_race_wins }}  <i class="fa fa-trophy"></i> | 
  	      <i class="fa-solid fa-arrow-up-1-9"></i> P{{ driver.best_race_result }} </div>
         </div>
-        <div class=" xsmall f1-highlights3">
+        <div class=" small f1-highlights3">
 	    <div>#{{ "FASTEST_LAP" | translate }}: {{ driver.total_fastest_laps }} | #{{ "DRIVER_OT_DAY" | translate }}: {{ driver.total_driver_of_the_day }}</div>
         </div>
         
       </div> <!-- Close the f1-card here -->
-    {% endfor %}
-  </div>  <!-- Close the birthday container here -->
-{% endif %} <!-- End birthday card -->
-
-          <!-- New Stats Section (Small font size) 
-          <div class="f1-stats-details" style="font-size: 0.85em; color: #555;">
-            <div><strong>Race Laps:</strong> {{ driver.total_race_laps }}</div>
-            <div><strong>Best Grid Position:</strong> P{{ driver.best_starting_grid_position }}</div>
-          </div>
--->
-{% endif %}
-
-
+    {% endif %} <!-- End birthday card -->
+  {% endfor %}
+</div>  <!-- Close the birthday container here -->

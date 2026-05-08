@@ -103,7 +103,7 @@ Module.register("MMM-Formula1", {
       DRIVERSTANDINGS_ERROR: () => this.increaseErrorCount("driverStandings"),
       CONSTRUCTORSTANDINGS_ERROR: () => this.increaseErrorCount("constructorStandings"),
       SCHEDULE_ERROR: () => this.increaseErrorCount("schedule"),
-      DRIVERPROFILES_ERROR: () => this.increaseErrorCount("driverProfiles"),
+      DRIVER_PROFILES_ERROR: () => this.increaseErrorCount("driverProfiles"),
       SEASON_DRIVERS_ERROR: () =>
         Log.error(
           `${this.name}: Failed to load driver list, birthday card data impaired: ${payload}`
@@ -179,7 +179,7 @@ Module.register("MMM-Formula1", {
       this.dataDriverProfiles,
       newDriverProfile
     );
-    this.driverProfileErrorCount = 0; // Reset error count
+    this.driverProfilesErrorCount = 0; // Reset error count
   },
 
   // Dynamically access the error count property based on the type
@@ -190,7 +190,7 @@ Module.register("MMM-Formula1", {
 
   // Define the template file used for rendering the module.
   getTemplate() {
-    return "templates\\mmm-formula1-standings.njk"; // Use the Nunjucks template for standings
+    return "templates/mmm-formula1-standings.njk"; // Use the Nunjucks template for standings
   },
 
   // Use the header to inform users about stale data.
@@ -201,7 +201,7 @@ Module.register("MMM-Formula1", {
       (this.constructorStandingsErrorCount > 0
         ? " (C:" + this.constructorStandingsErrorCount + ")"
         : "") + // Show constructor data error count
-      (this.driverProfileErrorCount > 0 ? " (P:" + this.driverProfileErrorCount + ")" : "") + // Show profile data error count
+      (this.driverProfilesErrorCount > 0 ? " (P:" + this.driverProfilesErrorCount + ")" : "") + // Show profile data error count
       (this.scheduleErrorCount > 0 ? " (S:" + this.scheduleErrorCount + ")" : "") // Show schedule data error count
     );
   },
@@ -261,6 +261,9 @@ Module.register("MMM-Formula1", {
     const env = this.nunjucksEnvironment(); // Get the Nunjucks environment
     env.addFilter("getCodeFromNationality", (nationality) => {
       return MMMFormula1Utils.getCodeFromNationality(this.nationalities, nationality); // Get nationality code
+    });
+    env.addFilter("isToday", (dob) => {
+      return MMMFormula1Utils.isToday(dob);
     });
     env.addFilter("getFadeOpacity", this.getFadeOpacity.bind(this)); // Add fade opacity filter
     env.addFilter("showStanding", (showType) =>

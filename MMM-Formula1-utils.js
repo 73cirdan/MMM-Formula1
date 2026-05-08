@@ -41,6 +41,30 @@ function formatDateAndTime(dateTime, timeFormat = 24, locale = "en") {
   return new Intl.DateTimeFormat(locale, options).format(date);
 }
 
+// Checks if a date is today
+function isToday(date) {
+  const today = new Date();
+  return date.getDate() === today.getDate() && date.getMonth() === today.getMonth();
+}
+
+// Checks if a birthday is within the next N days
+function isBirthdayInNextNDays(dob, daysAhead = 4) {
+  const today = new Date();
+
+  // Loop through the next N days
+  for (let i = 0; i <= daysAhead; i++) {
+    const check = new Date(today);
+    check.setDate(today.getDate() + i);
+
+    // Check if the date matches today's date + i days
+    if (dob.getDate() === check.getDate() && dob.getMonth() === check.getMonth()) {
+      return true;
+    }
+  }
+
+  return false; // No match in the next N days
+}
+
 // Finds the fan's driver position or constructor position from standings based on `isDriver`
 function findFan(standings, isDriver, fanCode) {
   if (!fanCode) return null;
@@ -111,6 +135,7 @@ function buildDriverCard(standing, OF_driver, RH_driver) {
     nationality: standing?.Driver.nationality,
     year,
     age,
+    dob,
     position: standing?.Driver.position || "-",
     points: standing?.points || "-",
     team: standing?.Constructors?.[0]?.name || "N/A",
@@ -152,11 +177,10 @@ function getCodeFromNationality(nationalityMap, nationality) {
   return nationalityMap[nationality] || "";
 }
 
-// Function to find a Driver with birthday is today and returen a list of DriverStanding object for each driver having a birthday
-function findBirthdayDrivers(standings) {
-  if (!standings?.DriverStandings) return null;
-
-  const today = new Date();
+// Function to find a Driver with birthday is soon and return a list of DriverStanding object for each driver having a birthday
+function findBirthdayDrivers(standings, daysAhead = 4) {
+  const birthdayDrivers = [];
+  if (!standings?.DriverStandings) return birthdayDrivers;
 
   // Build lookup from standings
   const standingsMap = {};
@@ -164,12 +188,12 @@ function findBirthdayDrivers(standings) {
     standingsMap[d.Driver.permanentNumber] = d;
   });
 
-  const birthdayDrivers = [];
   // Iterate through the standingsMap
   Object.values(standingsMap).forEach((driver) => {
     const dob = new Date(driver.Driver.dateOfBirth); // Assuming "dateOfBirth" is part of the driver object
-    var isBirthday = dob.getDate() === today.getDate() && dob.getMonth() === today.getMonth();
 
+    // Check if the birthday is within the next `daysAhead` days
+    var isBirthday = isBirthdayInNextNDays(dob, daysAhead);
     if (driver.Driver.code === "VER") isBirthday = true;
 
     if (!isBirthday) return; // Skip if not birthday
@@ -287,6 +311,7 @@ const circuitImages = {
 };
 
 const MMMFormula1Utils = {
+  isToday,
   shouldShowStanding,
   getCodeFromNationality,
   findBirthdayDrivers,
