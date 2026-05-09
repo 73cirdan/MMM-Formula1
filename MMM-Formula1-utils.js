@@ -178,9 +178,6 @@ function findBirthdayDrivers(standings, daysAhead = 4) {
   return standings.DriverStandings.filter((driver) => {
     const dob = new Date(driver.Driver.dateOfBirth);
 
-    // Special case for VER - TESTING
-    if (driver.Driver.code === "VER") return true;
-
     // Check if the birthday is within the next `daysAhead` days
     return isDateInNextNDays(dob, daysAhead);
   }).map((driver) => {
@@ -188,34 +185,6 @@ function findBirthdayDrivers(standings, daysAhead = 4) {
     return driver;
   });
 }
-/*
-function findBirthdayDrivers(standings, daysAhead = 4) {
-  const birthdayDrivers = [];
-  if (!standings?.DriverStandings) return birthdayDrivers;
-
-  // Build lookup from standings
-  const standingsMap = {};
-  standings.DriverStandings.forEach((d) => {
-    standingsMap[d.Driver.permanentNumber] = d;
-  });
-
-  // Iterate through the standingsMap
-  Object.values(standingsMap).forEach((driver) => {
-    const dob = new Date(driver.Driver.dateOfBirth); // Assuming "dateOfBirth" is part of the driver object
-
-    // Check if the birthday is within the next `daysAhead` days
-    var isBirthday = isDateInNextNDays(dob, daysAhead);
-    if (driver.Driver.code === "VER") isBirthday = true;
-
-    if (!isBirthday) return; // Skip if not birthday
-
-    console.warn("Birthday found: " + driver.Driver.code);
-    birthdayDrivers.push(driver); // Add driver to the list if it's their birthday
-  });
-
-  return birthdayDrivers;
-}
-*/
 
 // Function to build a dataset for the Driver profile view
 function processDriverProfiles(profiles, newProfile) {
