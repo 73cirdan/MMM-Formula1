@@ -41,28 +41,17 @@ function formatDateAndTime(dateTime, timeFormat = 24, locale = "en") {
   return new Intl.DateTimeFormat(locale, options).format(date);
 }
 
-// Checks if a date is today
-function isToday(date) {
-  const today = new Date();
-  return date.getDate() === today.getDate() && date.getMonth() === today.getMonth();
-}
-
-// Checks if a birthday is within the next N days
-function isBirthdayInNextNDays(dob, daysAhead = 4) {
+// Checks if a date occurs within the next N days
+function isDateInNextNDays(date, daysAhead = 4) {
   const today = new Date();
 
-  // Loop through the next N days
   for (let i = 0; i <= daysAhead; i++) {
     const check = new Date(today);
     check.setDate(today.getDate() + i);
-
-    // Check if the date matches today's date + i days
-    if (dob.getDate() === check.getDate() && dob.getMonth() === check.getMonth()) {
-      return true;
-    }
+    if (isDateEqual(date, check)) return true;
   }
 
-  return false; // No match in the next N days
+  return false;
 }
 
 // Finds the fan's driver position or constructor position from standings based on `isDriver`
@@ -162,6 +151,11 @@ function buildDriverCard(standing, OF_driver, RH_driver) {
 
 /* ---------------- Core Data Processing ---------------- */
 
+// Checks if two dates have the same day and month. If no second date is provided it checks the first date against today
+function isDateEqual(date1, date2 = new Date()) {
+  return date1.getDate() === date2.getDate() && date1.getMonth() === date2.getMonth();
+}
+
 // Determines if a particular standing should be displayed based on configuration.
 function shouldShowStanding(configType, showType, currentSecond) {
   const validTypes = ["DRIVER", "CONSTRUCTOR"];
@@ -179,6 +173,23 @@ function getCodeFromNationality(nationalityMap, nationality) {
 
 // Function to find a Driver with birthday is soon and return a list of DriverStanding object for each driver having a birthday
 function findBirthdayDrivers(standings, daysAhead = 4) {
+  if (!standings?.DriverStandings) return [];
+
+  return standings.DriverStandings.filter((driver) => {
+    const dob = new Date(driver.Driver.dateOfBirth);
+
+    // Special case for VER - TESTING
+    if (driver.Driver.code === "VER") return true;
+
+    // Check if the birthday is within the next `daysAhead` days
+    return isDateInNextNDays(dob, daysAhead);
+  }).map((driver) => {
+    console.warn("Birthday found: " + driver.Driver.code);
+    return driver;
+  });
+}
+/*
+function findBirthdayDrivers(standings, daysAhead = 4) {
   const birthdayDrivers = [];
   if (!standings?.DriverStandings) return birthdayDrivers;
 
@@ -193,7 +204,7 @@ function findBirthdayDrivers(standings, daysAhead = 4) {
     const dob = new Date(driver.Driver.dateOfBirth); // Assuming "dateOfBirth" is part of the driver object
 
     // Check if the birthday is within the next `daysAhead` days
-    var isBirthday = isBirthdayInNextNDays(dob, daysAhead);
+    var isBirthday = isDateInNextNDays(dob, daysAhead);
     if (driver.Driver.code === "VER") isBirthday = true;
 
     if (!isBirthday) return; // Skip if not birthday
@@ -204,6 +215,7 @@ function findBirthdayDrivers(standings, daysAhead = 4) {
 
   return birthdayDrivers;
 }
+*/
 
 // Function to build a dataset for the Driver profile view
 function processDriverProfiles(profiles, newProfile) {
@@ -215,6 +227,7 @@ function processDriverProfiles(profiles, newProfile) {
   const RH_driver = newProfile?.careerHighlights;
 
   // Check if the newProfile already exists in the profiles list based on unique driverId
+  Log.warn(newProfile);
   if (profileExists(profiles, EG_driver.driverId)) {
     console.warn("Profile already exists, not adding.");
     return profiles; // Return the original profiles array if the profile already exists
@@ -311,7 +324,7 @@ const circuitImages = {
 };
 
 const MMMFormula1Utils = {
-  isToday,
+  isDateEqual,
   shouldShowStanding,
   getCodeFromNationality,
   findBirthdayDrivers,

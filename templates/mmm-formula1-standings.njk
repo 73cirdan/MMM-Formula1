@@ -18,20 +18,20 @@
       </tr>
     </thead>
     <tbody>
-      {% if dataD === null %}
+      {% if not dataD  %}
         <tr class="small dimmed light">
-          <td colspan="5" text-align="center">{{ "NO DATA" | translate | safe }}</td>
+          <td colspan="5" syle="text-align:center">{{ "NO DATA" | translate | safe }}</td>
         </tr>
       {% else %}
         {% for standing in dataD.DriverStandings %}
           <tr class="normal" style="opacity: {{ loop.index | getFadeOpacity(loop.length) }};">
             <td class="title bright">
-              <img class="{{ "grayscale" if config.grayscale }}" src="{{ endpointconstructors }}{{ standing.Constructors[0].constructorId }}.png" height="27"></img>
+              <img class="{{ "grayscale" if config.grayscale }}" src="{{ endpointconstructors }}{{ standing.Constructors[0].constructorId }}.png" height="27">
             </td>
             <td class="bright align-right rightpad">{{ standing.position }}</td>
             <td class="title bright">{{ standing.Driver.givenName }} {{ standing.Driver.familyName }}</td>
             <td class="light">
-              <div class="flag flag-{{ standing.Driver.nationality | getCodeFromNationality }} {{ " grayscale" if config.grayscale }}"></div>
+              <i class="flag flag-{{ standing.Driver.nationality | getCodeFromNationality }} {{ " grayscale" if config.grayscale }}"></i>
             </td>
             <td class="bright align-right">{{ standing.points }}</td>
             <td class="bright align-right">{{ standing.wins }}</td>
@@ -53,20 +53,20 @@
     </tr>
   </thead>
   <tbody>
-    {% if dataC === null %}
+    {% if not dataC  %}
       <tr class="small dimmed light">
-        <td colspan="5" text-align="center">{{ "NO DATA" | translate | safe }}</td>
+        <td colspan="5" syle="text-align:center">{{ "NO DATA" | translate | safe }}</td>
       </tr>
     {% else %}
       {% for standing in dataC.ConstructorStandings %}
         <tr class="normal" style="opacity: {{ loop.index | getFadeOpacity(loop.length) }};">
           <td class="title bright">
-            <img class="{{ "grayscale" if config.grayscale }}" src="{{ endpointconstructors }}{{ standing.Constructor.constructorId }}.png" height="27"></img>
+            <img class="{{ "grayscale" if config.grayscale }}" src="{{ endpointconstructors }}{{ standing.Constructor.constructorId }}.png" height="27">
           </td>
           <td class="bright align-right rightpad">{{ standing.position }}</td>
           <td class="title bright">{{ standing.Constructor.name }}</td>
           <td class="light">
-            <div class="flag flag-{{ standing.Constructor.nationality | getCodeFromNationality }} {{ " grayscale" if config.grayscale }}"></div>
+            <i class="flag flag-{{ standing.Constructor.nationality | getCodeFromNationality }} {{ " grayscale" if config.grayscale }}"></i>
           </td>
           <td class="bright align-right">{{ standing.points }}</td>
           <td class="bright align-right">{{ standing.wins }}</td>
@@ -86,15 +86,15 @@
       </tr>
     </thead>
     <tbody>
-      {% if dataS === null %}
+      {% if not dataS %}
         <tr class="small dimmed light">
-          <td colspan="2" text-align="center">{{ "NO DATA" | translate | safe }}</td>
+          <td colspan="2" style="text-align:center">{{ "NO DATA" | translate | safe }}</td>
         </tr>
       {% else %}
         <tr class="title bright">
           <td class="small">{{ "SEASON" | translate }}: {{ dataS.season }}, {{ "ROUND" | translate }}: {{ dataS.round }}</td>
           <td rowspan="7" class="align-right">
-            <img src="{{ endpointtracks }}{{ dataS.circuitImage }}" height="155"></img>
+            <img src="{{ endpointtracks }}{{ dataS.circuitImage }}" height="155">
             {% if not config.grayscale %}
               <div>
                 <span class="xsmall" style="color: #EF4444">S1</span>
@@ -145,10 +145,10 @@
       {% endif %}
     </tbody>
   </table>
-    {% if (dataS and config.showNextRace ) %}
+    {% if dataS and config.showNextRace %}
         <table class="small align-left">
             <tr class="title light">
-                {% if (dataS.nextRaceDate ) %}
+                {% if dataS.nextRaceDate %}
                         <td class="small" text-align="center">{{ "NEXT_RACE" | translate }}: {{ dataS.nextRaceDate|safe }}: {{ dataS.nextRaceName }}</td>
                 {% else %}
                         <td class="small" text-align="center">{{ "LAST_RACE" | translate }}</td>
@@ -181,7 +181,7 @@
                   {% if driver.image %}
                         src="{{ driver.image }}"
                   {% endif %}
-            />
+             >
 
         <!-- Constructor section -->
           <div class="small f1-team">
@@ -219,3 +219,4 @@
     {% endif %} <!-- End birthday card -->
   {% endfor %}
 </div>  <!-- Close the birthday container here -->
+{% endif %} <!-- End not loading part -->
