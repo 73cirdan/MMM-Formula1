@@ -76,11 +76,11 @@ Module.register("MMM-Formula1", {
       .then((nationalitiesMap) => {
         this.nationalities = nationalitiesMap;
         this.addFilters();
-    })
-    .catch((error) => {
+      })
+      .catch((error) => {
         Log.error("Error loading nationalities:", error);
-    });
-/*
+      });
+    /*
     MMMFormula1Utils.loadNationalities(filePath)
       .then(function (nationalitiesMap) {
         self.nationalities = nationalitiesMap; // Store nationalities map
@@ -218,7 +218,6 @@ Module.register("MMM-Formula1", {
 
   // Prepare the template data to be passed to Nunjucks.
   getTemplateData() {
-
     const templateData = {
       loading: this.loading, // Whether the module is still loading data
       config: this.config, // Current module configuration
@@ -227,7 +226,7 @@ Module.register("MMM-Formula1", {
       dataC: this.slicedConstructorStandings, // Constructor standings data
       dataS: this.dataSchedule, // Schedule data
       endpointconstructors: this.endpoint + "constructors/", // Endpoint for constructor data
-      endpointtracks: this.endpoint + (this.config.grayscale ? "tracks" : "trackss"), // Endpoint for track data
+      endpointtracks: this.endpoint + (this.config.grayscale ? "tracks" : "trackss") // Endpoint for track data
       //identifier: this.identifier // Unique identifier for the module
     };
     return templateData;

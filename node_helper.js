@@ -111,13 +111,15 @@ module.exports = NodeHelper.create({
 
       // Fetch career highlights from RacingHub
       const careerHighlights = await fetchDriverCareerHighlights(driverId_RH);
-      const hasCareerHighlights  = careerHighlights && careerHighlights.total_race_wins !== null;
+      const hasCareerHighlights = careerHighlights && careerHighlights.total_race_wins !== null;
 
       // Combine driver profile data
-      const profileData = this.mergeProfileData(driverId_F1, 
-                                           hasOpenF1Data ? openF1Data : null, 
-                                           hasCareerHighlights   ? careerHighlights : null,
-                                           driverStanding);
+      const profileData = this.mergeProfileData(
+        driverId_F1,
+        hasOpenF1Data ? openF1Data : null,
+        hasCareerHighlights ? careerHighlights : null,
+        driverStanding
+      );
 
       // Send the combined driver profile data to the frontend
       this.sendSocketNotification("DRIVER_PROFILE", profileData);
@@ -160,12 +162,12 @@ module.exports = NodeHelper.create({
       careerHighlights: careerHighlights ?? cachedProfile?.careerHighlights ?? null,
       openF1: openF1 ?? cachedProfile?.openF1 ?? null,
       timestamp: new Date(),
-      ...standing,
+      ...standing
     };
 
     this.cachedProfiles[driverId] = mergedProfileData;
 
-    return mergedProfileData; 
+    return mergedProfileData;
   },
 
   getDriverId_RH(number) {
