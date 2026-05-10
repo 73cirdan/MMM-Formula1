@@ -196,7 +196,6 @@ function processDriverProfiles(profiles, newProfile) {
   const RH_driver = newProfile?.careerHighlights;
 
   // Check if the newProfile already exists in the profiles list based on unique driverId
-  Log.warn(newProfile);
   if (profileExists(profiles, EG_driver.driverId)) {
     console.warn("Profile already exists, not adding.");
     return profiles; // Return the original profiles array if the profile already exists
