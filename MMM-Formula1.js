@@ -17,7 +17,7 @@ Module.register("MMM-Formula1", {
     fade: false, // Apply fade effect in standings list
     fadePoint: 0.3, // Fade effect starts at this point in the standings list
     reloadInterval: 30 * 60 * 1000, // Interval to reload data (30 minutes)
-    screenRefreshInterval: 150 * 1000, // Interval to refresh the screen (30 seconds)
+    screenRefreshInterval: 30 * 1000, // Interval to refresh the screen (30 seconds)
     animationSpeed: 2.5 * 1000, // Animation speed (2.5 seconds)
     grayscale: false, // Enable grayscale for flag colors
     showNextRace: true // Show the next race when displaying the schedule
@@ -71,6 +71,16 @@ Module.register("MMM-Formula1", {
     // Load nationalities data (via API) and initialize filters
     var self = this;
     var filePath = self.endpoint + "nationalities.json";
+
+    MMMFormula1Utils.loadNationalities(filePath)
+      .then((nationalitiesMap) => {
+        this.nationalities = nationalitiesMap;
+        this.addFilters();
+      })
+      .catch((error) => {
+        Log.error("Error loading nationalities:", error);
+      });
+    /*
     MMMFormula1Utils.loadNationalities(filePath)
       .then(function (nationalitiesMap) {
         self.nationalities = nationalitiesMap; // Store nationalities map
@@ -79,7 +89,7 @@ Module.register("MMM-Formula1", {
       .catch(function (error) {
         Log.error("Error loading nationalities:", error); // Log error if nationalities loading fails
       });
-
+*/
     // Start polling for data (via helper) and send configuration to socket.
     this.sendSocketNotification("CONFIG", this.config);
 
@@ -103,7 +113,7 @@ Module.register("MMM-Formula1", {
       DRIVERSTANDINGS_ERROR: () => this.increaseErrorCount("driverStandings"),
       CONSTRUCTORSTANDINGS_ERROR: () => this.increaseErrorCount("constructorStandings"),
       SCHEDULE_ERROR: () => this.increaseErrorCount("schedule"),
-      DRIVERPROFILES_ERROR: () => this.increaseErrorCount("driverProfiles"),
+      DRIVER_PROFILE_ERROR: () => this.increaseErrorCount("driverProfiles"),
       SEASON_DRIVERS_ERROR: () =>
         Log.error(
           `${this.name}: Failed to load driver list, birthday card data impaired: ${payload}`
@@ -179,7 +189,7 @@ Module.register("MMM-Formula1", {
       this.dataDriverProfiles,
       newDriverProfile
     );
-    this.driverProfileErrorCount = 0; // Reset error count
+    this.driverProfilesErrorCount = 0; // Reset error count
   },
 
   // Dynamically access the error count property based on the type
@@ -190,7 +200,7 @@ Module.register("MMM-Formula1", {
 
   // Define the template file used for rendering the module.
   getTemplate() {
-    return "templates\\mmm-formula1-standings.njk"; // Use the Nunjucks template for standings
+    return "templates/mmm-formula1-standings.njk"; // Use the Nunjucks template for standings
   },
 
   // Use the header to inform users about stale data.
@@ -201,27 +211,23 @@ Module.register("MMM-Formula1", {
       (this.constructorStandingsErrorCount > 0
         ? " (C:" + this.constructorStandingsErrorCount + ")"
         : "") + // Show constructor data error count
-      (this.driverProfileErrorCount > 0 ? " (P:" + this.driverProfileErrorCount + ")" : "") + // Show profile data error count
+      (this.driverProfilesErrorCount > 0 ? " (P:" + this.driverProfilesErrorCount + ")" : "") + // Show profile data error count
       (this.scheduleErrorCount > 0 ? " (S:" + this.scheduleErrorCount + ")" : "") // Show schedule data error count
     );
   },
 
   // Prepare the template data to be passed to Nunjucks.
   getTemplateData() {
-    const hasBirthday = !!(this.dataDriverProfiles && this.dataDriverProfiles.length);
-
     const templateData = {
       loading: this.loading, // Whether the module is still loading data
       config: this.config, // Current module configuration
       dataDriverProfiles: this.dataDriverProfiles,
-      hasBirthday: hasBirthday,
       dataD: this.slicedDriverStandings, // Driver standings data
       dataC: this.slicedConstructorStandings, // Constructor standings data
       dataS: this.dataSchedule, // Schedule data
       endpointconstructors: this.endpoint + "constructors/", // Endpoint for constructor data
-      endpointtracks: this.endpoint + (this.config.grayscale ? "tracks" : "trackss"), // Endpoint for track data
-      identifier: this.identifier // Unique identifier for the module
-      //timeStamp: this.dataRefreshTimeStamp // Last data refresh timestamp
+      endpointtracks: this.endpoint + (this.config.grayscale ? "tracks" : "trackss") // Endpoint for track data
+      //identifier: this.identifier // Unique identifier for the module
     };
     return templateData;
   },
@@ -261,6 +267,9 @@ Module.register("MMM-Formula1", {
     const env = this.nunjucksEnvironment(); // Get the Nunjucks environment
     env.addFilter("getCodeFromNationality", (nationality) => {
       return MMMFormula1Utils.getCodeFromNationality(this.nationalities, nationality); // Get nationality code
+    });
+    env.addFilter("isToday", (dob) => {
+      return MMMFormula1Utils.isDateEqual(new Date(dob));
     });
     env.addFilter("getFadeOpacity", this.getFadeOpacity.bind(this)); // Add fade opacity filter
     env.addFilter("showStanding", (showType) =>

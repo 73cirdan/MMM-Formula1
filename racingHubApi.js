@@ -33,15 +33,20 @@ async function fetchSeasonDrivers(season) {
 async function fetchDriverCareerHighlights(driverId) {
   const racingHubUrl = `https://racinghub.net/api/v1/drivers/${driverId}`;
 
-  const result = await fetchData(racingHubUrl); // Use the generic fetchData function
+  try {
+    const result = await fetchData(racingHubUrl); // Use the generic fetchData function
 
-  if (result.error) {
-    console.error(`OpenF1 API error: ${result.error.message}`); // Log the error for debugging purposes
-    return null; // Handle error or return a default value if needed
+    if (result.error) {
+      console.error(`RacingHub API error: ${result.error.message}`); // Log the error for debugging purposes
+      return null; // Handle error or return a default value if needed
+    }
+
+    // Parse the result in RacingHub-specific way
+    return result.data || null;
+  } catch (error) {
+    console.error(`Error fetching RacingHub driver profile:`, error);
+    return null; // Return null if an error occurs
   }
-
-  // Parse the result in RacingHub-specific way
-  return result.data || null;
 }
 
 module.exports = { fetchSeasonDrivers, fetchDriverCareerHighlights };

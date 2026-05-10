@@ -19,6 +19,7 @@ module.exports = NodeHelper.create({
     Log.log(`Starting module: ${this.name}`); // Log that the module is starting
     this.config = {}; // Initialize an empty config object
     this.racingHubSeasonDriversData = null;
+    this.cachedProfiles = {};
   },
 
   socketNotificationReceived(notification, payload) {
@@ -57,7 +58,10 @@ module.exports = NodeHelper.create({
     }
 
     // Wait for all requests to complete
-    await Promise.all(requests);
+    const results = await Promise.allSettled(requests);
+    results.forEach((r, idx) => {
+      if (r.status === "rejected") Log.error(`API request ${idx} failed:`, r.reason);
+    });
 
     // Schedule the next fetch based on the reload interval specified in the config
     this.timerId = setTimeout(() => this.fetchApiData(), this.config.reloadInterval);
@@ -95,25 +99,27 @@ module.exports = NodeHelper.create({
     try {
       // Fetch driver image from OpenF1
       const openF1Data = await fetchDriverProfile(driverId_F1);
+      const hasOpenF1Data = openF1Data && openF1Data.headshot_url && openF1Data.team_colour;
 
       // Get RacingHub driver ID
-      var driverId_RH = this.getDriverId_RH(driverId_F1);
+      let driverId_RH = this.getDriverId_RH(driverId_F1);
 
-      // Create the backup driver ID using underscore between first and last name
+      // Create the backup driver ID using - between first and last name, as back up if previous failed
       if (!driverId_RH && openF1Data) {
         driverId_RH = `${openF1Data.first_name.toLowerCase()}-${openF1Data.last_name.toLowerCase()}`;
       }
 
       // Fetch career highlights from RacingHub
       const careerHighlights = await fetchDriverCareerHighlights(driverId_RH);
+      const hasCareerHighlights = careerHighlights && careerHighlights.total_race_wins !== null;
 
       // Combine driver profile data
-      const profileData = {
-        careerHighlights,
-        openF1: openF1Data, // Driver's image
-        timestamp: new Date(),
-        ...driverStanding // Include other driver data like name, nationality, etc.
-      };
+      const profileData = this.mergeProfileData(
+        driverId_F1,
+        hasOpenF1Data ? openF1Data : null,
+        hasCareerHighlights ? careerHighlights : null,
+        driverStanding
+      );
 
       // Send the combined driver profile data to the frontend
       this.sendSocketNotification("DRIVER_PROFILE", profileData);
@@ -148,9 +154,26 @@ module.exports = NodeHelper.create({
     }
   },
 
+  // handles caching and combines a driver profile
+  mergeProfileData(driverId, openF1, careerHighlights, standing) {
+    const cachedProfile = this.cachedProfiles?.[driverId];
+
+    const mergedProfileData = {
+      careerHighlights: careerHighlights ?? cachedProfile?.careerHighlights ?? null,
+      openF1: openF1 ?? cachedProfile?.openF1 ?? null,
+      timestamp: new Date(),
+      ...standing
+    };
+
+    this.cachedProfiles[driverId] = mergedProfileData;
+
+    return mergedProfileData;
+  },
+
   getDriverId_RH(number) {
     if (!this.racingHubSeasonDriversData) return null;
-    const driver = this.racingHubSeasonDriversData.find((d) => String(d.number) === String(number));
+    const numStr = String(number);
+    const driver = this.racingHubSeasonDriversData.find((d) => String(d.number) === numStr);
     return driver ? driver.id : null;
   },
 
