@@ -163,6 +163,7 @@ function shouldShowStanding(configType, showType, currentSecond) {
     const isFirstHalf = 60 - currentSecond > 30;
     return showType === "DRIVER" ? isFirstHalf : !isFirstHalf;
   }
+  if (configType === "BOTH") { return true; }
   return validTypes.includes(configType) && configType === showType;
 }
 

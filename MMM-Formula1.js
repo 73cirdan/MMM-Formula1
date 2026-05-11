@@ -80,16 +80,6 @@ Module.register("MMM-Formula1", {
       .catch((error) => {
         Log.error("Error loading nationalities:", error);
       });
-    /*
-    MMMFormula1Utils.loadNationalities(filePath)
-      .then(function (nationalitiesMap) {
-        self.nationalities = nationalitiesMap; // Store nationalities map
-        self.addFilters(); // Add custom Nunjucks filters
-      })
-      .catch(function (error) {
-        Log.error("Error loading nationalities:", error); // Log error if nationalities loading fails
-      });
-*/
     // Start polling for data (via helper) and send configuration to socket.
     this.sendSocketNotification("CONFIG", this.config);
 
@@ -143,9 +133,8 @@ Module.register("MMM-Formula1", {
       this.config
     );
 
-    const todayStr = new Date().toDateString();
-
     // Keep only today's profiles
+    const todayStr = new Date().toDateString();
     this.dataDriverProfiles = this.dataDriverProfiles.filter(
       (p) => new Date(p.timestamp).toDateString() === todayStr
     );
