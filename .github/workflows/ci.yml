@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v6 # Updated to v3 for Node.js 22+ compatibility
+        uses: actions/checkout@v7 # Updated to v3 for Node.js 22+ compatibility
 
       - name: Set up Node.js
         uses: actions/setup-node@v6 # Updated to v3 for Node.js 22+ compatibility
@@ -40,7 +40,7 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v6 # Updated to v3 for Node.js 22+ compatibility
+        uses: actions/checkout@v7 # Updated to v3 for Node.js 22+ compatibility
 
       - name: Set up Node.js
         uses: actions/setup-node@v6 # Updated to v3
